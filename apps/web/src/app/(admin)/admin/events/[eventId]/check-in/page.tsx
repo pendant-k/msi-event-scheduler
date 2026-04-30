@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { searchCheckInRows } from "@scheduler/domain";
 import { checkInAction } from "@/app/actions";
 import { getAdminUserId } from "@/lib/auth";
@@ -21,6 +22,9 @@ export default async function CheckInPage({
   return (
     <div className="space-y-4">
       <div>
+        <Link href={`/admin/events/${eventId}`} className="btn btn-ghost btn-sm">
+          운영 허브
+        </Link>
         <h1 className="text-2xl font-bold">체크인 대시보드</h1>
         <p className="text-sm text-base-content/60">전화번호 뒷자리, 이름 일부, 학교 일부, 예약번호로 검색합니다.</p>
       </div>

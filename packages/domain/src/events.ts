@@ -3,7 +3,7 @@ import type { SchedulerDb } from "@scheduler/db";
 import { eventAdmins, eventDays, events, timeslots } from "@scheduler/db";
 import { assertEventAdmin } from "./admin";
 import { DomainError } from "./errors";
-import { id, nowIso } from "./utils";
+import { id, nowIso, shortCode } from "./utils";
 
 export async function listPublishedEvents(db: SchedulerDb) {
   return db.query.events.findMany({
@@ -70,7 +70,8 @@ export async function createManagedEvent(
   }
 ) {
   const name = input.name.trim();
-  const eventId = (input.eventId?.trim() || slugifyEventId(name) || id("event")).slice(0, 64);
+  const generatedEventId = `${slugifyEventId(name) || "event"}-${shortCode(6).toLowerCase()}`;
+  const eventId = (input.eventId?.trim() || generatedEventId).slice(0, 64);
   if (!name || !input.eventDate || !input.startsAt || !input.endsAt) {
     throw new DomainError("invalid_input", "행사 이름, 날짜, 시작/종료 시간이 필요합니다.");
   }

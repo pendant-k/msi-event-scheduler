@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listAdminEvents } from "@scheduler/domain";
-import { adminLoginAction, createEventAction } from "@/app/actions";
+import { adminLoginAction } from "@/app/actions";
 import { getAdminUserId } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
 
@@ -23,61 +23,15 @@ export default async function AdminHomePage() {
   const events = await listAdminEvents(await getAppDb(), adminUserId);
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">관리자 대시보드</h1>
-        <p className="text-sm text-base-content/60">행사를 만들고 운영 화면으로 이동합니다.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">관리자 대시보드</h1>
+          <p className="text-sm text-base-content/60">행사를 선택해 운영하거나 새 행사를 만듭니다.</p>
+        </div>
+        <Link href="/admin/events/new" className="btn btn-primary">
+          새 행사
+        </Link>
       </div>
-
-      <section className="rounded border border-base-300 bg-base-100 p-4">
-        <h2 className="mb-3 text-lg font-semibold">행사 생성</h2>
-        <form action={createEventAction} className="grid gap-3 md:grid-cols-2">
-          <label className="form-control">
-            <span className="label-text">행사 ID</span>
-            <input name="eventId" className="input input-bordered" placeholder="msi-2026" />
-          </label>
-          <label className="form-control">
-            <span className="label-text">행사명</span>
-            <input name="name" className="input input-bordered" required />
-          </label>
-          <label className="form-control md:col-span-2">
-            <span className="label-text">설명</span>
-            <input name="description" className="input input-bordered" />
-          </label>
-          <label className="form-control">
-            <span className="label-text">날짜</span>
-            <input name="eventDate" type="date" className="input input-bordered" required />
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <label className="form-control">
-              <span className="label-text">시작</span>
-              <input name="startsAt" type="time" className="input input-bordered" defaultValue="10:00" required />
-            </label>
-            <label className="form-control">
-              <span className="label-text">종료</span>
-              <input name="endsAt" type="time" className="input input-bordered" defaultValue="17:00" required />
-            </label>
-          </div>
-          <label className="form-control">
-            <span className="label-text">슬롯 간격(분)</span>
-            <input name="timeslotMinutes" type="number" min={5} className="input input-bordered" defaultValue={30} required />
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <label className="form-control">
-              <span className="label-text">슬롯 정원</span>
-              <input name="capacity" type="number" min={1} className="input input-bordered" defaultValue={20} required />
-            </label>
-            <label className="form-control">
-              <span className="label-text">대회 정원</span>
-              <input name="tournamentCapacity" type="number" min={1} className="input input-bordered" defaultValue={32} required />
-            </label>
-          </div>
-          <div className="md:col-span-2">
-            <button className="btn btn-primary" type="submit">
-              행사 만들기
-            </button>
-          </div>
-        </form>
-      </section>
 
       <div className="grid gap-3">
         {events.map((event) => (

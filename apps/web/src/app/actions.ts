@@ -113,6 +113,7 @@ export async function cancelAdminReservationAction(formData: FormData) {
     reason: formString(formData, "reason") || "admin_cancel"
   });
   revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/admin/events/${eventId}/reservations`);
 }
 
 export async function markNoShowAction(formData: FormData) {
@@ -126,6 +127,7 @@ export async function markNoShowAction(formData: FormData) {
     adminUserId
   });
   revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/admin/events/${eventId}/reservations`);
   revalidatePath(`/admin/events/${eventId}/check-in`);
 }
 
@@ -135,7 +137,6 @@ export async function createEventAction(formData: FormData) {
   const db = await getAppDb();
   const result = await createManagedEvent(db, {
     adminUserId,
-    eventId: formString(formData, "eventId") || undefined,
     name: formString(formData, "name"),
     description: formString(formData, "description"),
     eventDate: formString(formData, "eventDate"),
@@ -163,6 +164,7 @@ export async function addEventDayAction(formData: FormData) {
     endsAt: formString(formData, "endsAt")
   });
   revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/admin/events/${eventId}/schedule`);
 }
 
 export async function addTimeslotAction(formData: FormData) {
@@ -179,6 +181,7 @@ export async function addTimeslotAction(formData: FormData) {
     capacity: formNumber(formData, "capacity", 20)
   });
   revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/admin/events/${eventId}/schedule`);
   revalidatePath(`/event/${eventId}`);
   revalidatePath(`/event/${eventId}/schedule`);
 }
@@ -200,6 +203,7 @@ export async function updateTimeslotAction(formData: FormData) {
     status
   });
   revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/admin/events/${eventId}/schedule`);
   revalidatePath(`/event/${eventId}`);
   revalidatePath(`/event/${eventId}/schedule`);
 }
@@ -227,6 +231,7 @@ export async function manualOverbookAction(formData: FormData) {
     reason: formString(formData, "reason") || "admin_manual_overbook"
   });
   revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/admin/events/${eventId}/reservations`);
   revalidatePath(`/admin/events/${eventId}/check-in`);
   revalidatePath(`/event/${eventId}`);
 }
