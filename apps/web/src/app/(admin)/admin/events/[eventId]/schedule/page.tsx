@@ -27,7 +27,7 @@ export default async function AdminSchedulePage({ params }: { params: Promise<{ 
       <Schedule event={schedule.event} day={schedule.selectedDay} timeslots={schedule.timeslots} mode="admin" />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <details className="rounded border border-base-300 bg-base-100 p-4">
+        <details className="surface-flat p-4">
           <summary className="cursor-pointer font-semibold">날짜 추가</summary>
           <form action={addEventDayAction} className="mt-4 grid gap-3">
             <input type="hidden" name="eventId" value={eventId} />
@@ -55,7 +55,7 @@ export default async function AdminSchedulePage({ params }: { params: Promise<{ 
           </form>
         </details>
 
-        <details className="rounded border border-base-300 bg-base-100 p-4">
+        <details className="surface-flat p-4">
           <summary className="cursor-pointer font-semibold">타임슬롯 추가</summary>
           <form action={addTimeslotAction} className="mt-4 grid gap-3">
             <input type="hidden" name="eventId" value={eventId} />
@@ -90,14 +90,14 @@ export default async function AdminSchedulePage({ params }: { params: Promise<{ 
         </details>
       </div>
 
-      <section className="rounded border border-base-300 bg-base-100 p-4">
+      <section className="surface-flat p-4">
         <h2 className="mb-3 text-lg font-semibold">타임슬롯 상태/정원</h2>
         <div className="grid gap-2">
           {schedule.timeslots.map((slot) => (
             <form
               key={slot.id}
               action={updateTimeslotAction}
-              className="grid items-end gap-2 rounded border border-base-200 p-3 md:grid-cols-[1fr_120px_140px_auto]"
+              className="slot-row-flat grid items-end gap-2 p-3 md:grid-cols-[1fr_120px_140px_auto]"
             >
               <input type="hidden" name="eventId" value={eventId} />
               <input type="hidden" name="timeslotId" value={slot.id} />

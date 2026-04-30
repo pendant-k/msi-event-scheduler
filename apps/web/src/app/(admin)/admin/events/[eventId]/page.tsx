@@ -32,17 +32,17 @@ export default async function AdminEventPage({ params }: { params: Promise<{ eve
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
-        <div className="rounded border border-base-300 bg-base-100 p-4">
+        <div className="stat-flat p-4">
           <div className="text-sm text-base-content/60">예약</div>
           <div className="text-2xl font-bold">{rows.length}</div>
           <div className="text-sm text-base-content/60">활성 {activeCount}건</div>
         </div>
-        <div className="rounded border border-base-300 bg-base-100 p-4">
+        <div className="stat-flat p-4">
           <div className="text-sm text-base-content/60">체크인</div>
           <div className="text-2xl font-bold">{checkedInCount}</div>
           <div className="text-sm text-base-content/60">현장 처리 완료</div>
         </div>
-        <div className="rounded border border-base-300 bg-base-100 p-4">
+        <div className="stat-flat p-4">
           <div className="text-sm text-base-content/60">타임슬롯</div>
           <div className="text-2xl font-bold">{schedule.timeslots.length}</div>
           <div className="text-sm text-base-content/60">{schedule.selectedDay?.eventDate ?? "날짜 미정"}</div>
@@ -50,19 +50,19 @@ export default async function AdminEventPage({ params }: { params: Promise<{ eve
       </div>
 
       <nav className="grid gap-3 md:grid-cols-2">
-        <Link href={`/admin/events/${eventId}/check-in`} className="rounded border border-base-300 bg-base-100 p-4 hover:border-primary">
+        <Link href={`/admin/events/${eventId}/check-in`} className="surface-flat interactive-flat p-4">
           <div className="font-semibold">체크인 대시보드</div>
           <div className="text-sm text-base-content/60">전화번호 뒷자리, 이름, 학교, 예약번호로 현장 참가자를 찾습니다.</div>
         </Link>
-        <Link href={`/admin/events/${eventId}/reservations`} className="rounded border border-base-300 bg-base-100 p-4 hover:border-primary">
+        <Link href={`/admin/events/${eventId}/reservations`} className="surface-flat interactive-flat p-4">
           <div className="font-semibold">예약 관리</div>
           <div className="text-sm text-base-content/60">예약 테이블, 수동 초과 예약, 취소/노쇼 처리를 관리합니다.</div>
         </Link>
-        <Link href={`/admin/events/${eventId}/schedule`} className="rounded border border-base-300 bg-base-100 p-4 hover:border-primary">
+        <Link href={`/admin/events/${eventId}/schedule`} className="surface-flat interactive-flat p-4">
           <div className="font-semibold">시간표 관리</div>
           <div className="text-sm text-base-content/60">행사 날짜, 타임슬롯, 정원과 공개 상태를 수정합니다.</div>
         </Link>
-        <Link href={`/admin/events/${eventId}/export`} className="rounded border border-base-300 bg-base-100 p-4 hover:border-primary">
+        <Link href={`/admin/events/${eventId}/export`} className="surface-flat interactive-flat p-4">
           <div className="font-semibold">CSV Export</div>
           <div className="text-sm text-base-content/60">예약/참가자 목록을 CSV로 내려받습니다.</div>
         </Link>

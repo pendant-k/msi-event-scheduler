@@ -11,7 +11,7 @@ export default async function ParticipantReservationsPage({ params }: { params: 
   const session = await getParticipantSession(db, await getParticipantToken());
   if (!session || session.eventId !== eventId) {
     return (
-      <form action={participantAccessAction} className="mx-auto max-w-md space-y-3 rounded border border-base-300 bg-base-100 p-4">
+      <form action={participantAccessAction} className="surface-flat mx-auto max-w-md space-y-3 p-4">
         <h1 className="text-xl font-semibold">내 예약 확인</h1>
         <input type="hidden" name="eventId" value={eventId} />
         <input name="phoneNumber" className="input input-bordered w-full" placeholder="전화번호" required />
@@ -35,7 +35,7 @@ export default async function ParticipantReservationsPage({ params }: { params: 
       </div>
       <div className="grid gap-3">
         {rows.map((row) => (
-          <div key={row.id} className="rounded border border-base-300 bg-base-100 p-4">
+          <div key={row.id} className="surface-flat p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="font-semibold">{row.participantName}</div>

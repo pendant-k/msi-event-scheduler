@@ -2,15 +2,120 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  background: #f7f8fb;
+@layer base {
+  :root {
+    --app-bg: #f2f4f6;
+    --app-surface: #ffffff;
+    --app-surface-muted: #e9edf2;
+    --app-text: #1f2329;
+    --app-muted: #6b7280;
+    --app-blue: #3182f6;
+    --app-blue-hover: #1b64da;
+    --app-separator: rgba(31, 35, 41, 0.08);
+  }
+
+  html {
+    background: var(--app-bg);
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--app-bg);
+    color: var(--app-text);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+  }
 }
 
-body {
-  min-height: 100vh;
-}
+@layer components {
+  .page-shell {
+    width: min(1120px, calc(100% - 32px));
+    margin: 0 auto;
+  }
 
-.page-shell {
-  width: min(1120px, calc(100% - 32px));
-  margin: 0 auto;
+  .topbar-flat {
+    border-bottom: 1px solid var(--app-separator);
+    background: rgba(242, 244, 246, 0.86);
+    backdrop-filter: blur(16px);
+  }
+
+  .surface-flat {
+    border-radius: 8px;
+    background: var(--app-surface);
+  }
+
+  .interactive-flat {
+    position: relative;
+    border-radius: 8px;
+    transition: background-color 140ms ease;
+  }
+
+  .interactive-flat:hover {
+    background: var(--app-surface-muted);
+  }
+
+  .interactive-flat:active {
+    background: #e8edf3;
+  }
+
+  .stat-flat {
+    border-radius: 8px;
+    background: var(--app-surface);
+  }
+
+  .slot-row-flat {
+    border-radius: 8px;
+    background: var(--app-surface);
+  }
+
+  .btn {
+    transition:
+      background-color 140ms ease,
+      color 140ms ease,
+      filter 140ms ease;
+    border-width: 0;
+    box-shadow: none;
+  }
+
+  .btn:hover {
+    filter: brightness(0.98);
+  }
+
+  .btn:active {
+    filter: brightness(0.94);
+  }
+
+  .btn-primary {
+    background: var(--app-blue);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: var(--app-blue-hover);
+  }
+
+  .btn-outline,
+  .btn-ghost {
+    background: var(--app-surface-muted);
+    color: var(--app-text);
+  }
+
+  .btn-outline:hover,
+  .btn-ghost:hover {
+    background: #e9edf2;
+    color: var(--app-text);
+  }
+
+  .input,
+  .select,
+  .textarea {
+    border-width: 0;
+    background: var(--app-surface-muted);
+    box-shadow: none;
+  }
+
+  .table {
+    overflow: hidden;
+    border-radius: 8px;
+  }
 }

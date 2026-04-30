@@ -25,7 +25,7 @@ export function Schedule({
           const remaining = Math.max(0, slot.capacity - slot.reservedCount);
           const full = remaining === 0;
           return (
-            <div key={slot.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-base-300 bg-base-100 p-3">
+            <div key={slot.id} className="slot-row-flat flex flex-wrap items-center justify-between gap-3 p-3">
               <div>
                 <div className="font-medium">
                   {formatTime(slot.startsAt)} - {formatTime(slot.endsAt)}

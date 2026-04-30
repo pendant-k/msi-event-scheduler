@@ -36,7 +36,7 @@ export default async function CheckInPage({
       </form>
       <div className="grid gap-2">
         {rows.map((row) => (
-          <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 rounded border border-base-300 bg-base-100 p-3">
+          <div key={row.id} className="surface-flat flex flex-wrap items-center justify-between gap-3 p-3">
             <div>
               <div className="font-medium">
                 {row.participantName} · {row.school} · {row.grade}학년

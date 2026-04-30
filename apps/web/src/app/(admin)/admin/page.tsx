@@ -8,7 +8,7 @@ export default async function AdminHomePage() {
   const adminUserId = await getAdminUserId();
   if (!adminUserId) {
     return (
-      <form action={adminLoginAction} className="mx-auto max-w-md space-y-3 rounded border border-base-300 bg-base-100 p-4">
+      <form action={adminLoginAction} className="surface-flat mx-auto max-w-md space-y-3 p-5">
         <h1 className="text-xl font-semibold">관리자 로그인</h1>
         <input name="email" type="email" className="input input-bordered w-full" defaultValue="admin@example.com" required />
         <input name="password" type="password" className="input input-bordered w-full" defaultValue="password" required />
@@ -35,7 +35,7 @@ export default async function AdminHomePage() {
 
       <div className="grid gap-3">
         {events.map((event) => (
-          <div key={event.id} className="flex items-center justify-between rounded border border-base-300 bg-base-100 p-4">
+          <div key={event.id} className="surface-flat interactive-flat flex items-center justify-between p-4">
             <div>
               <div className="font-semibold">{event.name}</div>
               <div className="text-sm text-base-content/60">{event.status}</div>

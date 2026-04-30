@@ -40,7 +40,7 @@ export default async function AdminReservationsPage({ params }: { params: Promis
         </Link>
       </div>
 
-      <details className="rounded border border-base-300 bg-base-100 p-4">
+      <details className="surface-flat p-4">
         <summary className="cursor-pointer font-semibold">수동 초과 예약</summary>
         <form action={manualOverbookAction} className="mt-4 grid gap-3 md:grid-cols-2">
           <input type="hidden" name="eventId" value={eventId} />
@@ -94,7 +94,7 @@ export default async function AdminReservationsPage({ params }: { params: Promis
         </form>
       </details>
 
-      <section className="rounded border border-base-300 bg-base-100 p-4">
+      <section className="surface-flat p-4">
         <h2 className="mb-3 text-lg font-semibold">예약 테이블</h2>
         <DataTable
           rows={tableRows}
@@ -110,11 +110,11 @@ export default async function AdminReservationsPage({ params }: { params: Promis
         />
       </section>
 
-      <section className="rounded border border-base-300 bg-base-100 p-4">
+      <section className="surface-flat p-4">
         <h2 className="mb-3 text-lg font-semibold">취소/노쇼 처리</h2>
         <div className="grid gap-2">
           {rows.map((row) => (
-            <div key={row.id} className="flex flex-wrap items-center justify-between gap-2 rounded border border-base-200 p-2">
+            <div key={row.id} className="slot-row-flat flex flex-wrap items-center justify-between gap-2 p-2">
               <div className="text-sm">
                 {row.participantName} · {row.school} · {formatDateTime(row.startsAt)} · {row.status}
               </div>

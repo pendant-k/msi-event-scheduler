@@ -17,7 +17,7 @@ export default async function NewEventPage() {
         <p className="text-sm text-base-content/60">행사 URL에 쓰이는 ID는 자동으로 생성됩니다.</p>
       </div>
 
-      <form action={createEventAction} className="grid gap-4 rounded border border-base-300 bg-base-100 p-4">
+      <form action={createEventAction} className="surface-flat grid gap-4 p-4">
         <label className="form-control">
           <span className="label-text">행사명</span>
           <input name="name" className="input input-bordered" required />

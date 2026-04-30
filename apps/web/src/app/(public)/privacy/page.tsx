@@ -1,6 +1,6 @@
 export default function PrivacyPage() {
   return (
-    <article className="prose max-w-none rounded border border-base-300 bg-base-100 p-6">
+    <article className="prose surface-flat max-w-none p-6">
       <h1>개인정보 수집 및 이용 안내</h1>
       <p>행사 예약과 현장 운영을 위해 필요한 최소한의 개인정보만 수집합니다.</p>
       <h2>수집 항목</h2>
