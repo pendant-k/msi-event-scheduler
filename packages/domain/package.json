@@ -1,0 +1,26 @@
+{
+  "name": "@scheduler/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@scheduler/config": "workspace:*",
+    "@scheduler/db": "workspace:*",
+    "bcryptjs": "^3.0.0",
+    "drizzle-orm": "^0.44.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}
