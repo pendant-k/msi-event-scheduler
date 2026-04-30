@@ -1,6 +1,6 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import type { SchedulerDb } from "@scheduler/db";
-import { adminLogs, eventAdmins, events, reservations, timeslots } from "@scheduler/db";
+import { adminLogs, eventAdmins, eventDays, events, reservations, timeslots } from "@scheduler/db";
 import { DomainError } from "./errors";
 import { createReservation } from "./reservations";
 import { id, nowIso } from "./utils";
@@ -21,11 +21,16 @@ export async function listAdminEvents(db: SchedulerDb, adminUserId = localAdminU
       id: events.id,
       name: events.name,
       status: events.status,
-      description: events.description
+      description: events.description,
+      eventDate: sql<string | null>`min(${eventDays.eventDate})`,
+      createdAt: events.createdAt
     })
     .from(events)
     .innerJoin(eventAdmins, eq(eventAdmins.eventId, events.id))
-    .where(eq(eventAdmins.adminUserId, adminUserId));
+    .leftJoin(eventDays, eq(eventDays.eventId, events.id))
+    .where(eq(eventAdmins.adminUserId, adminUserId))
+    .groupBy(events.id)
+    .orderBy(asc(sql`min(${eventDays.eventDate})`), asc(events.createdAt));
 }
 
 export async function manualOverbookReservation(

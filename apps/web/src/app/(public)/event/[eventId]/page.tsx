@@ -36,7 +36,7 @@ export default async function EventPage({ params }: { params: Promise<{ eventId:
         <Schedule event={bundle.event} day={day} timeslots={bundle.timeslots} mode="participant" />
       </div>
 
-      <aside className="surface-flat p-4">
+      <aside id="reservation-form" className="surface-flat scroll-mt-6 p-4">
         {activeSession ? (
           <form action={createReservationAction} className="space-y-3">
             <h2 className="text-lg font-semibold">예약하기</h2>
