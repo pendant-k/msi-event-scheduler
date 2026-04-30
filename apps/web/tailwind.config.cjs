@@ -1,6 +1,5 @@
-import type { Config } from "tailwindcss";
-
-const config: Config = {
+/** @type {import("tailwindcss").Config} */
+module.exports = {
   content: ["./src/**/*.{ts,tsx}", "../../packages/ui/src/**/*.{ts,tsx}"],
   theme: {
     extend: {}
@@ -10,5 +9,3 @@ const config: Config = {
     themes: ["light"]
   }
 };
-
-export default config;

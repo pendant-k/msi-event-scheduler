@@ -3,6 +3,7 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, isAbsolute, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import * as schema from "./schema";
 
 export type SchedulerDb = LibSQLDatabase<typeof schema>;
@@ -12,7 +13,8 @@ let singleton: { client: Client; db: SchedulerDb } | undefined;
 function defaultDatabaseUrl(): string {
   const explicit = process.env.DATABASE_URL;
   if (explicit) return explicit;
-  const filePath = join(process.cwd(), "data", "local.db");
+  const packageSourceDir = dirname(fileURLToPath(import.meta.url));
+  const filePath = join(packageSourceDir, "..", "..", "..", "data", "local.db");
   return `file:${filePath}`;
 }
 
