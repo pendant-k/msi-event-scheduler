@@ -56,7 +56,7 @@ export default async function AdminEventPage({ params }: { params: Promise<{ eve
         </Link>
         <Link href={`/admin/events/${eventId}/reservations`} className="surface-flat interactive-flat p-4">
           <div className="font-semibold">예약 관리</div>
-          <div className="text-sm text-base-content/60">예약 테이블, 수동 초과 예약, 취소/노쇼 처리를 관리합니다.</div>
+          <div className="text-sm text-base-content/60">예약 테이블, 수동 예약 추가, 취소/노쇼 처리를 관리합니다.</div>
         </Link>
         <Link href={`/admin/events/${eventId}/schedule`} className="surface-flat interactive-flat p-4">
           <div className="font-semibold">시간표 관리</div>

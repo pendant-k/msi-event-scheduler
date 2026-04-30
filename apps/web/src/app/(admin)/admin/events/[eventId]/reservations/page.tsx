@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { DataTable } from "@scheduler/ui/data-table";
 import { getSchedule, searchCheckInRows } from "@scheduler/domain";
-import { cancelAdminReservationAction, manualOverbookAction, markNoShowAction } from "@/app/actions";
+import { cancelAdminReservationAction, markNoShowAction } from "@/app/actions";
+import { ManualReservationModal } from "@/components/manual-reservation-modal";
 import { getAdminUserId } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
@@ -35,64 +36,13 @@ export default async function AdminReservationsPage({ params }: { params: Promis
           <h1 className="mt-3 text-2xl font-bold">예약 관리</h1>
           <p className="text-sm text-base-content/60">{schedule.event.name}</p>
         </div>
-        <Link href={`/admin/events/${eventId}/export`} className="btn btn-outline btn-sm">
-          CSV Export
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <ManualReservationModal eventId={eventId} timeslots={schedule.timeslots} />
+          <Link href={`/admin/events/${eventId}/export`} className="btn btn-outline btn-sm">
+            CSV Export
+          </Link>
+        </div>
       </div>
-
-      <details className="surface-flat p-4">
-        <summary className="cursor-pointer font-semibold">수동 초과 예약</summary>
-        <form action={manualOverbookAction} className="mt-4 grid gap-3 md:grid-cols-2">
-          <input type="hidden" name="eventId" value={eventId} />
-          <label className="form-control md:col-span-2">
-            <span className="label-text">타임슬롯</span>
-            <select name="timeslotId" className="select select-bordered" required>
-              {schedule.timeslots.map((slot) => (
-                <option key={slot.id} value={slot.id}>
-                  {formatDateTime(slot.startsAt)} · {slot.reservedCount}/{slot.capacity}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="form-control">
-            <span className="label-text">전화번호</span>
-            <input name="phoneNumber" className="input input-bordered" inputMode="tel" required />
-          </label>
-          <label className="form-control">
-            <span className="label-text">신규 접근 비밀번호</span>
-            <input name="initialPassword" type="password" className="input input-bordered" minLength={4} required />
-          </label>
-          <label className="form-control">
-            <span className="label-text">이름</span>
-            <input name="name" className="input input-bordered" required />
-          </label>
-          <label className="form-control">
-            <span className="label-text">학교</span>
-            <input name="school" className="input input-bordered" required />
-          </label>
-          <label className="form-control">
-            <span className="label-text">학년</span>
-            <input name="grade" type="number" min={1} max={12} className="input input-bordered" required />
-          </label>
-          <label className="form-control">
-            <span className="label-text">사유</span>
-            <input name="reason" className="input input-bordered" placeholder="현장 운영자 승인" />
-          </label>
-          <label className="label cursor-pointer justify-start gap-3">
-            <input name="guardianConfirmed" type="checkbox" className="checkbox" />
-            <span className="label-text">보호자 동행 확인</span>
-          </label>
-          <label className="label cursor-pointer justify-start gap-3">
-            <input name="tournament" type="checkbox" className="checkbox" />
-            <span className="label-text">대회 참가 신청</span>
-          </label>
-          <div className="md:col-span-2">
-            <button className="btn btn-primary" type="submit">
-              수동 예약
-            </button>
-          </div>
-        </form>
-      </details>
 
       <section className="surface-flat p-4">
         <h2 className="mb-3 text-lg font-semibold">예약 테이블</h2>

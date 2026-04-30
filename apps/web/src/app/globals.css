@@ -165,6 +165,16 @@
     background: var(--app-blue-hover);
   }
 
+  .btn-accent {
+    background: #00c471;
+    color: #fff;
+  }
+
+  .btn-accent:hover {
+    background: #00ad63;
+    color: #fff;
+  }
+
   .btn-outline,
   .btn-ghost {
     background: var(--app-surface-muted);
@@ -183,6 +193,17 @@
     border-width: 0;
     background: var(--app-surface-muted);
     box-shadow: none;
+  }
+
+  .modal-box {
+    border-radius: 12px;
+    background: var(--app-surface);
+    box-shadow: none;
+  }
+
+  .modal-backdrop {
+    background: rgba(31, 35, 41, 0.34);
+    backdrop-filter: blur(3px);
   }
 
   .table {
