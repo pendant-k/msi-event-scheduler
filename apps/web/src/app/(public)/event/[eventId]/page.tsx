@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getEventBundle } from "@scheduler/domain";
 import { getParticipantSession } from "@scheduler/domain";
 import { createReservationAction, participantAccessAction } from "@/app/actions";
+import { EventModeToggle } from "@/components/event-mode-toggle";
 import { Schedule } from "@/components/schedule";
 import { getParticipantToken } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
@@ -22,8 +23,13 @@ export default async function EventPage({ params }: { params: Promise<{ eventId:
     <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
       <div className="space-y-6">
         <section className="space-y-3">
-          <h1 className="text-3xl font-bold">{bundle.event.name}</h1>
-          <p className="text-base-content/70">{bundle.event.description}</p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h1 className="text-3xl font-bold">{bundle.event.name}</h1>
+              <p className="mt-3 text-base-content/70">{bundle.event.description}</p>
+            </div>
+            <EventModeToggle eventId={eventId} active="reservation" />
+          </div>
           <div className="flex flex-wrap gap-2">
             <Link href={`/event/${eventId}/schedule`} className="btn btn-outline btn-sm">
               전체 시간표

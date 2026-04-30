@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getSchedule, searchCheckInRows } from "@scheduler/domain";
+import { EventModeToggle } from "@/components/event-mode-toggle";
 import { Schedule } from "@/components/schedule";
 import { getAdminUserId } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
@@ -26,9 +27,7 @@ export default async function AdminEventPage({ params }: { params: Promise<{ eve
           <h1 className="mt-3 text-2xl font-bold">{schedule.event.name}</h1>
           <p className="text-sm text-base-content/60">{schedule.event.description ?? "행사 운영 허브"}</p>
         </div>
-        <Link href={`/event/${eventId}`} className="btn btn-outline btn-sm">
-          참가자 페이지
-        </Link>
+        <EventModeToggle eventId={eventId} active="admin" />
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
