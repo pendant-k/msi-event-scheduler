@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { manualOverbookAction } from "@/app/actions";
 import { formatDateTime } from "@/lib/format";
 
@@ -18,25 +18,55 @@ type ManualReservationModalProps = {
 
 export function ManualReservationModal({ eventId, timeslots }: ManualReservationModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeTimerRef = useRef<number | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const openModal = useCallback(() => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    setIsClosing(false);
+    dialogRef.current?.showModal();
+  }, []);
+
+  const closeModal = useCallback(() => {
+    if (!dialogRef.current?.open || isClosing) return;
+    setIsClosing(true);
+    closeTimerRef.current = window.setTimeout(() => {
+      dialogRef.current?.close();
+      setIsClosing(false);
+      closeTimerRef.current = null;
+    }, 160);
+  }, [isClosing]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    };
+  }, []);
 
   return (
     <>
-      <button className="btn btn-accent btn-sm text-white" type="button" onClick={() => dialogRef.current?.showModal()}>
+      <button className="btn btn-accent btn-sm text-white" type="button" onClick={openModal}>
         수동 예약 추가
       </button>
 
-      <dialog ref={dialogRef} className="modal">
+      <dialog
+        ref={dialogRef}
+        className="modal manual-reservation-modal"
+        data-closing={isClosing ? "true" : undefined}
+        onCancel={(event) => {
+          event.preventDefault();
+          closeModal();
+        }}
+      >
         <div className="modal-box max-w-2xl">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-lg font-bold">수동 예약 추가</h2>
               <p className="mt-1 text-sm text-base-content/60">현장에서 운영자가 확인한 참가자를 예약에 직접 추가합니다.</p>
             </div>
-            <form method="dialog">
-              <button className="btn btn-ghost btn-sm" type="submit" aria-label="닫기">
-                닫기
-              </button>
-            </form>
+            <button className="btn btn-ghost btn-sm" type="button" onClick={closeModal} aria-label="닫기">
+              닫기
+            </button>
           </div>
 
           <form action={manualOverbookAction} className="mt-5 grid gap-3 md:grid-cols-2">
@@ -84,7 +114,7 @@ export function ManualReservationModal({ eventId, timeslots }: ManualReservation
               <span className="label-text">대회 참가 신청</span>
             </label>
             <div className="flex justify-end gap-2 md:col-span-2">
-              <button className="btn btn-ghost" type="button" onClick={() => dialogRef.current?.close()}>
+              <button className="btn btn-ghost" type="button" onClick={closeModal}>
                 취소
               </button>
               <button className="btn btn-primary" type="submit">
@@ -93,9 +123,9 @@ export function ManualReservationModal({ eventId, timeslots }: ManualReservation
             </div>
           </form>
         </div>
-        <form method="dialog" className="modal-backdrop">
-          <button type="submit">닫기</button>
-        </form>
+        <div className="modal-backdrop" onClick={closeModal}>
+          <button type="button">닫기</button>
+        </div>
       </dialog>
     </>
   );
