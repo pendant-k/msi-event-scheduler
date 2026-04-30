@@ -12,6 +12,13 @@
     --app-blue: #3182f6;
     --app-blue-hover: #1b64da;
     --app-separator: rgba(31, 35, 41, 0.08);
+    --motion-duration-fast: 120ms;
+    --motion-duration-base: 180ms;
+    --motion-duration-slow: 240ms;
+    --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --motion-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+    --motion-press-scale: 0.985;
   }
 
   html {
@@ -118,7 +125,9 @@
   .interactive-flat {
     position: relative;
     border-radius: 8px;
-    transition: background-color 140ms ease;
+    transition:
+      background-color var(--motion-duration-fast) var(--motion-ease-standard),
+      transform var(--motion-duration-fast) var(--motion-ease-standard);
   }
 
   .interactive-flat:hover {
@@ -127,6 +136,7 @@
 
   .interactive-flat:active {
     background: #e8edf3;
+    transform: scale(var(--motion-press-scale));
   }
 
   .stat-flat {
@@ -141,9 +151,10 @@
 
   .btn {
     transition:
-      background-color 140ms ease,
-      color 140ms ease,
-      filter 140ms ease;
+      background-color var(--motion-duration-fast) var(--motion-ease-standard),
+      color var(--motion-duration-fast) var(--motion-ease-standard),
+      filter var(--motion-duration-fast) var(--motion-ease-standard),
+      transform var(--motion-duration-fast) var(--motion-ease-standard);
     border-width: 0;
     box-shadow: none;
   }
@@ -154,6 +165,7 @@
 
   .btn:active {
     filter: brightness(0.94);
+    transform: scale(var(--motion-press-scale));
   }
 
   .btn-primary {
@@ -207,19 +219,19 @@
   }
 
   .manual-reservation-modal[open] {
-    animation: modal-overlay-in 160ms ease-out both;
+    animation: modal-overlay-in var(--motion-duration-base) var(--motion-ease-standard) both;
   }
 
   .manual-reservation-modal[open] .modal-box {
-    animation: modal-panel-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: modal-panel-in var(--motion-duration-slow) var(--motion-ease-out) both;
   }
 
   .manual-reservation-modal[open][data-closing="true"] {
-    animation: modal-overlay-out 160ms ease-in both;
+    animation: modal-overlay-out var(--motion-duration-base) var(--motion-ease-in) both;
   }
 
   .manual-reservation-modal[open][data-closing="true"] .modal-box {
-    animation: modal-panel-out 160ms ease-in both;
+    animation: modal-panel-out var(--motion-duration-base) var(--motion-ease-in) both;
   }
 
   @keyframes modal-overlay-in {
@@ -243,7 +255,7 @@
   @keyframes modal-panel-in {
     from {
       opacity: 0;
-      transform: translateY(8px) scale(0.98);
+      transform: translateY(10px) scale(0.98);
     }
     to {
       opacity: 1;
@@ -258,7 +270,23 @@
     }
     to {
       opacity: 0;
-      transform: translateY(6px) scale(0.985);
+      transform: translateY(4px) scale(0.99);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .interactive-flat,
+    .btn {
+      transition-duration: 1ms;
+      transform: none;
+    }
+
+    .manual-reservation-modal[open],
+    .manual-reservation-modal[open] .modal-box,
+    .manual-reservation-modal[open][data-closing="true"],
+    .manual-reservation-modal[open][data-closing="true"] .modal-box {
+      animation-duration: 1ms;
+      transform: none;
     }
   }
 

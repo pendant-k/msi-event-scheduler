@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { manualOverbookAction } from "@/app/actions";
 import { formatDateTime } from "@/lib/format";
 
+const MODAL_EXIT_MS = 180;
+
 type ManualReservationSlot = {
   id: string;
   startsAt: string;
@@ -34,7 +36,7 @@ export function ManualReservationModal({ eventId, timeslots }: ManualReservation
       dialogRef.current?.close();
       setIsClosing(false);
       closeTimerRef.current = null;
-    }, 160);
+    }, MODAL_EXIT_MS);
   }, [isClosing]);
 
   useEffect(() => {
