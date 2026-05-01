@@ -149,44 +149,6 @@
     background: var(--app-surface);
   }
 
-  .mode-toggle {
-    display: inline-grid;
-    grid-template-columns: repeat(2, minmax(4.5rem, 1fr));
-    gap: 0.25rem;
-    border-radius: 999px;
-    background: var(--app-surface-muted);
-    padding: 0.25rem;
-  }
-
-  .mode-toggle-item {
-    display: inline-flex;
-    min-height: 2.25rem;
-    align-items: center;
-    justify-content: center;
-    border-radius: 999px;
-    padding: 0 0.875rem;
-    color: var(--app-muted);
-    font-size: 0.875rem;
-    font-weight: 800;
-    transition:
-      background-color var(--motion-duration-fast) var(--motion-ease-standard),
-      color var(--motion-duration-fast) var(--motion-ease-standard),
-      transform var(--motion-duration-fast) var(--motion-ease-standard);
-  }
-
-  .mode-toggle-item:hover {
-    color: var(--app-text);
-  }
-
-  .mode-toggle-item:active {
-    transform: scale(var(--motion-press-scale));
-  }
-
-  .mode-toggle-item[aria-current="page"] {
-    background: var(--app-surface);
-    color: var(--app-text);
-  }
-
   .btn {
     transition:
       background-color var(--motion-duration-fast) var(--motion-ease-standard),
@@ -314,8 +276,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .interactive-flat,
-    .btn,
-    .mode-toggle-item {
+    .btn {
       transition-duration: 1ms;
       transform: none;
     }
