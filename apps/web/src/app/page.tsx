@@ -35,7 +35,6 @@ export default function HomePage() {
               />
             </label>
           </div>
-          <p className="text-sm text-base-content/60">로컬 프로토타입은 env 기반 mock gate를 사용합니다.</p>
           <button className="btn btn-primary w-full" type="submit">
             로그인
           </button>
