@@ -10,3 +10,4 @@ data
 *.tsbuildinfo
 .env
 .env.local
+/logo.png
