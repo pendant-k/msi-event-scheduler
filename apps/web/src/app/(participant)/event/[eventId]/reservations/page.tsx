@@ -14,6 +14,7 @@ export default async function ParticipantReservationsPage({ params }: { params: 
       <form action={participantAccessAction} className="surface-flat mx-auto max-w-md space-y-3 p-4">
         <h1 className="text-xl font-semibold">내 예약 확인</h1>
         <input type="hidden" name="eventId" value={eventId} />
+        <input type="hidden" name="redirectTo" value={`/event/${eventId}/reservations`} />
         <input name="phoneNumber" className="input input-bordered w-full" placeholder="전화번호" required />
         <input name="password" type="password" className="input input-bordered w-full" placeholder="행사 비밀번호" required />
         <p className="text-sm text-base-content/60">비밀번호를 잊은 경우 현장 운영자에게 문의해 주세요.</p>

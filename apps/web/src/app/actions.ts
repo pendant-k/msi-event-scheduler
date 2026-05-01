@@ -34,10 +34,12 @@ export async function participantAccessAction(formData: FormData) {
   const eventId = formString(formData, "eventId");
   const phoneNumber = formString(formData, "phoneNumber");
   const password = formString(formData, "password");
+  const redirectTo = formString(formData, "redirectTo");
   const db = await getAppDb();
   const session = await createOrLoginParticipantAccess(db, { eventId, phoneNumber, password });
   await setParticipantToken(session.token, session.expiresAt);
-  redirect(`/event/${eventId}/reservations`);
+  const allowedRedirects = new Set([`/event/${eventId}`, `/event/${eventId}/reservations`]);
+  redirect(allowedRedirects.has(redirectTo) ? redirectTo : `/event/${eventId}`);
 }
 
 export async function createReservationAction(formData: FormData) {
