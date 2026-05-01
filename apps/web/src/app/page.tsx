@@ -10,7 +10,6 @@ export default function HomePage() {
         <div className="space-y-4 p-6">
           <div>
             <h1 className="text-2xl font-bold">관리자 로그인</h1>
-            <p className="mt-2 text-sm text-base-content/60">행사 운영 대시보드에 접근합니다.</p>
           </div>
           <div className="space-y-3">
             <label className="form-control">
