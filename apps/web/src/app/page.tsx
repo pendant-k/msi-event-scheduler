@@ -2,12 +2,12 @@ import { adminLoginAction } from "@/app/actions";
 
 export default function HomePage() {
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-xl items-center">
+    <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-3xl items-center">
       <form action={adminLoginAction} className="surface-flat w-full overflow-hidden">
-        <div className="bg-white">
-          <img src="/logo.png" alt="메생이" className="h-64 w-full object-cover object-center" />
+        <div className="bg-white px-10 py-6">
+          <img src="/logo.png" alt="메생이" className="mx-auto h-64 w-full object-contain object-center" />
         </div>
-        <div className="space-y-4 p-5">
+        <div className="space-y-4 p-6">
           <div>
             <h1 className="text-2xl font-bold">관리자 로그인</h1>
             <p className="mt-2 text-sm text-base-content/60">행사 운영 대시보드에 접근합니다.</p>
