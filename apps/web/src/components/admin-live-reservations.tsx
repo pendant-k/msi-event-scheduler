@@ -16,7 +16,7 @@ export type AdminReservationRow = {
   participantName: string;
   school: string;
   grade: number;
-  maskedPhone: string;
+  phoneNumber: string;
   timeslotTitle: string | null;
   startsAt: string;
   endsAt: string;
@@ -85,7 +85,7 @@ export function AdminReservationActionCard({ eventId, row }: { eventId: string; 
           <span>{row.school}</span>
           <span>{row.grade}학년</span>
           <span>{getTimeslotLabel(row)}</span>
-          <span>{row.maskedPhone}</span>
+          <span>{row.phoneNumber}</span>
           <span>{row.reservationCode}</span>
         </div>
       </div>
@@ -142,7 +142,7 @@ function AdminLiveReservationsInner({ eventId, initialRows, initialUpdatedAt, qu
     name: row.participantName,
     school: row.school,
     grade: `${row.grade}`,
-    phone: row.maskedPhone,
+    phone: row.phoneNumber,
     status: getReservationStatusLabel(row.status),
     tournament: row.tournament ? "신청" : "-"
   }));

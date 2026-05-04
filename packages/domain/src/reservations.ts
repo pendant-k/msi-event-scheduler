@@ -9,7 +9,7 @@ import {
   timeslots
 } from "@scheduler/db";
 import { DomainError } from "./errors";
-import { duplicateKey, id, maskPhone, normalizePhone, nowIso, shortCode } from "./utils";
+import { duplicateKey, id, normalizePhone, nowIso, shortCode } from "./utils";
 
 type Actor =
   | { type: "participant"; accessId: string }
@@ -326,5 +326,5 @@ export async function searchCheckInRows(
     .innerJoin(timeslots, eq(timeslots.id, reservations.timeslotId))
     .where(and(...conditions))
     .orderBy(timeslots.startsAt, participants.name);
-  return rows.map((row) => ({ ...row, maskedPhone: maskPhone(row.phoneNumber), phoneNumber: undefined }));
+  return rows;
 }

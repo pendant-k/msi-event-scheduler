@@ -186,7 +186,7 @@ describeWithDb("reservation domain", () => {
 
     const rows = await searchCheckInRows(db, { eventId: "event-test", query: "1234" });
     expect(rows).toHaveLength(1);
-    expect(rows[0]?.maskedPhone).toBe("****1234");
+    expect(rows[0]?.phoneNumber).toBe("01099991234");
   });
 
   it("prevents concurrent reservations from exceeding slot capacity", async () => {
