@@ -1176,6 +1176,35 @@
     min-height: 8rem;
   }
 
+  .timeslot-settings-panel {
+    display: grid;
+    gap: 0.875rem;
+  }
+
+  .timeslot-settings-form {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1.4fr) minmax(7rem, 0.6fr) minmax(9rem, 0.8fr);
+    align-items: end;
+  }
+
+  .timeslot-settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    grid-column: 1 / -1;
+  }
+
+  .timeslot-delete-form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 1px solid rgba(220, 38, 38, 0.18);
+    border-radius: 8px;
+    background: #fef2f2;
+    padding: 0.875rem;
+  }
+
   .timeslot-reservation-state {
     display: inline-flex;
     align-items: center;
@@ -1433,6 +1462,21 @@
       flex: 0 0 auto;
       min-width: 4rem;
       padding-inline: 0.75rem;
+    }
+
+    .timeslot-settings-form,
+    .timeslot-delete-form {
+      grid-template-columns: 1fr;
+    }
+
+    .timeslot-delete-form {
+      display: grid;
+    }
+
+    .timeslot-settings-actions,
+    .timeslot-settings-actions .btn,
+    .timeslot-delete-form .btn {
+      width: 100%;
     }
 
     .reservation-panel {
