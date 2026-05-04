@@ -52,6 +52,17 @@ const eventNavItems = [
   { key: "public", label: "예약 페이지", icon: ExternalLink, path: null }
 ] as const;
 
+const eventStatusLabels: Record<string, string> = {
+  DRAFT: "작성 중",
+  PUBLISHED: "공개",
+  CLOSED: "마감",
+  ARCHIVED: "보관됨"
+};
+
+function getEventStatusLabel(status: string) {
+  return eventStatusLabels[status] ?? status;
+}
+
 function AdminNavLink({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
   const pathname = usePathname();
   const active = pathname === item.href;
@@ -75,7 +86,7 @@ function AdminSidebar({ events, onNavigate, onClose }: { events: AdminEventLink[
   const activeEvent = events.find((event) => {
     const baseHref = `/admin/events/${event.id}`;
     return pathname === baseHref || pathname.startsWith(`${baseHref}/`) || pathname === `/event/${event.id}`;
-  });
+  }) ?? events[0];
 
   return (
     <aside className="admin-sidebar surface-flat">
@@ -128,8 +139,8 @@ function AdminSidebar({ events, onNavigate, onClose }: { events: AdminEventLink[
                 >
                   <span className="admin-event-option-title">{event.name}</span>
                   <span className="admin-event-option-meta">
-                    <span>{event.eventDate ?? "날짜 미정"}</span>
-                    <span>{event.status}</span>
+                    <span className="admin-event-option-date">{event.eventDate ?? "날짜 미정"}</span>
+                    <span className="admin-event-option-status">{getEventStatusLabel(event.status)}</span>
                   </span>
                 </Link>
               );
