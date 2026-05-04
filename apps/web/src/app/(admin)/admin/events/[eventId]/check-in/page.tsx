@@ -4,6 +4,7 @@ import { checkInAction } from "@/app/actions";
 import { getAdminUserId } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
+import { getReservationStatusLabel, getReservationStatusTone } from "@/lib/status-labels";
 import { redirect } from "next/navigation";
 
 export default async function CheckInPage({
@@ -46,7 +47,9 @@ export default async function CheckInPage({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="badge badge-outline">{row.status}</span>
+              <span className={`status-pill status-pill-${getReservationStatusTone(row.status)}`}>
+                {getReservationStatusLabel(row.status)}
+              </span>
               <form action={checkInAction}>
                 <input type="hidden" name="eventId" value={eventId} />
                 <input type="hidden" name="reservationId" value={row.id} />

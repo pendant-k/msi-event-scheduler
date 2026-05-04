@@ -1,8 +1,8 @@
--- Production-target Supabase Postgres schema.
--- Local prototype uses Drizzle + SQLite with equivalent table names and behavior.
+-- Supabase Postgres schema for the scheduler app.
+-- IDs are text to keep public event slugs such as "msi-2026" compatible with local SQLite.
 
 create table if not exists events (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
   name text not null,
   description text,
   timezone text not null default 'Asia/Seoul',
@@ -21,9 +21,9 @@ create table if not exists events (
 );
 
 create table if not exists event_days (
-  id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references events(id) on delete cascade,
-  event_date date not null,
+  id text primary key,
+  event_id text not null references events(id) on delete cascade,
+  event_date text not null,
   label text,
   starts_at timestamptz,
   ends_at timestamptz,
@@ -33,17 +33,17 @@ create table if not exists event_days (
 );
 
 create table if not exists event_admins (
-  id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references events(id) on delete cascade,
-  admin_user_id uuid not null references auth.users(id) on delete cascade,
+  id text primary key,
+  event_id text not null references events(id) on delete cascade,
+  admin_user_id text not null,
   role text not null check (role in ('OWNER', 'MANAGER', 'STAFF')),
   created_at timestamptz not null default now(),
   unique (event_id, admin_user_id)
 );
 
 create table if not exists participant_accesses (
-  id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references events(id) on delete cascade,
+  id text primary key,
+  event_id text not null references events(id) on delete cascade,
   phone_number text not null,
   phone_last4 text not null,
   password_hash text not null,
@@ -56,9 +56,9 @@ create table if not exists participant_accesses (
 );
 
 create table if not exists participant_sessions (
-  id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references events(id) on delete cascade,
-  access_id uuid not null references participant_accesses(id) on delete cascade,
+  id text primary key,
+  event_id text not null references events(id) on delete cascade,
+  access_id text not null references participant_accesses(id) on delete cascade,
   session_token_hash text not null unique,
   expires_at timestamptz not null,
   created_at timestamptz not null default now(),
@@ -66,9 +66,9 @@ create table if not exists participant_sessions (
 );
 
 create table if not exists participants (
-  id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references events(id) on delete cascade,
-  access_id uuid not null references participant_accesses(id) on delete cascade,
+  id text primary key,
+  event_id text not null references events(id) on delete cascade,
+  access_id text not null references participant_accesses(id) on delete cascade,
   name text not null,
   school text not null,
   grade integer not null,
@@ -79,9 +79,9 @@ create table if not exists participants (
 );
 
 create table if not exists timeslots (
-  id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references events(id) on delete cascade,
-  event_day_id uuid not null references event_days(id) on delete cascade,
+  id text primary key,
+  event_id text not null references events(id) on delete cascade,
+  event_day_id text not null references event_days(id) on delete cascade,
   starts_at timestamptz not null,
   ends_at timestamptz not null,
   capacity integer not null check (capacity >= 0),
@@ -93,11 +93,11 @@ create table if not exists timeslots (
 );
 
 create table if not exists reservations (
-  id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references events(id) on delete cascade,
-  timeslot_id uuid not null references timeslots(id),
-  access_id uuid not null references participant_accesses(id),
-  participant_id uuid not null references participants(id),
+  id text primary key,
+  event_id text not null references events(id) on delete cascade,
+  timeslot_id text not null references timeslots(id),
+  access_id text not null references participant_accesses(id),
+  participant_id text not null references participants(id),
   status text not null check (status in ('RESERVED', 'LATE_RESERVED', 'CHECKED_IN', 'CANCELLED', 'NO_SHOW')),
   tournament boolean not null default false,
   duplicate_key text,
@@ -115,12 +115,12 @@ create table if not exists reservations (
 );
 
 create table if not exists admin_logs (
-  id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references events(id) on delete cascade,
-  admin_user_id uuid not null references auth.users(id),
+  id text primary key,
+  event_id text not null references events(id) on delete cascade,
+  admin_user_id text not null,
   action text not null,
   target_type text not null,
-  target_id uuid,
+  target_id text,
   reason text,
   metadata jsonb not null default '{}',
   created_at timestamptz not null default now()
@@ -139,3 +139,13 @@ create unique index if not exists idx_reservations_active_duplicate_key_unique
 on reservations (event_id, duplicate_key)
 where duplicate_key is not null
   and status in ('RESERVED', 'LATE_RESERVED', 'CHECKED_IN');
+
+alter table events enable row level security;
+alter table event_days enable row level security;
+alter table event_admins enable row level security;
+alter table participant_accesses enable row level security;
+alter table participant_sessions enable row level security;
+alter table participants enable row level security;
+alter table timeslots enable row level security;
+alter table reservations enable row level security;
+alter table admin_logs enable row level security;

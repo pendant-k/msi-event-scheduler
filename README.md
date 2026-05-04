@@ -38,3 +38,11 @@ password
 - Participant sessions are stored in httpOnly cookies.
 - Admin auth is mocked locally and isolated behind an adapter for Supabase Auth email/password.
 - QR generation is not implemented in v1; the app provides event URLs only.
+
+## Deployment
+
+Vercel + Supabase setup is documented in [`docs/deployment.md`](./docs/deployment.md).
+
+- Local development uses `DATABASE_URL=file:./data/local.db`.
+- Vercel production should use the Supabase Postgres transaction pooler URL as `DATABASE_URL`.
+- The Supabase schema lives in [`supabase/schema.sql`](./supabase/schema.sql).

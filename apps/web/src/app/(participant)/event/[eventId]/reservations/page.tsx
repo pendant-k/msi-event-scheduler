@@ -4,6 +4,7 @@ import { cancelParticipantReservationAction, participantAccessAction } from "@/a
 import { getParticipantToken } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
+import { getReservationStatusLabel, getReservationStatusTone } from "@/lib/status-labels";
 
 export default async function ParticipantReservationsPage({ params }: { params: Promise<{ eventId: string }> }) {
   const { eventId } = await params;
@@ -45,7 +46,9 @@ export default async function ParticipantReservationsPage({ params }: { params: 
                 </div>
                 <div className="mt-2 text-sm">예약번호: {row.reservationCode}</div>
               </div>
-              <div className="badge badge-outline">{row.status}</div>
+              <div className={`status-pill status-pill-${getReservationStatusTone(row.status)}`}>
+                {getReservationStatusLabel(row.status)}
+              </div>
             </div>
             {(row.status === "RESERVED" || row.status === "LATE_RESERVED") && (
               <form action={cancelParticipantReservationAction} className="mt-3">

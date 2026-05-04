@@ -9,6 +9,7 @@ import {
   type ColumnDef,
   type SortingState
 } from "@tanstack/react-table";
+import { ChevronLeft, ChevronRight, Inbox } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export type SimpleColumn<T extends Record<string, unknown>> = {
@@ -35,35 +36,6 @@ function getPaginationItems(currentPage: number, pageCount: number): PaginationI
     if (!previous || page - previous === 1) return [page];
     return ["ellipsis", page];
   });
-}
-
-function ChevronLeftIcon() {
-  return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
-      <path d="m15 18-6-6 6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
-      <path d="m9 18 6-6-6-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-    </svg>
-  );
-}
-
-function EmptyTableIcon() {
-  return (
-    <svg aria-hidden="true" className="h-9 w-9" fill="none" viewBox="0 0 24 24">
-      <path
-        d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 17.5v-11Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path d="M8 9h8M8 12h8M8 15h5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-    </svg>
-  );
 }
 
 export function DataTable<T extends Record<string, unknown>>({
@@ -132,7 +104,7 @@ export function DataTable<T extends Record<string, unknown>>({
               <td colSpan={columns.length}>
                 <div className="flex min-h-48 flex-col items-center justify-center gap-3 py-14 text-center text-base-content/55">
                   <div className="rounded-full bg-base-200 p-3 text-base-content/35">
-                    <EmptyTableIcon />
+                    <Inbox aria-hidden="true" className="h-9 w-9" />
                   </div>
                   <div>
                     <div className="font-semibold text-base-content/70">표시할 데이터가 없습니다</div>
@@ -152,7 +124,7 @@ export function DataTable<T extends Record<string, unknown>>({
           disabled={!table.getCanPreviousPage()}
           aria-label="이전 페이지"
         >
-          <ChevronLeftIcon />
+          <ChevronLeft aria-hidden="true" className="h-4 w-4" />
         </button>
         <div className="flex items-center gap-1 px-2">
           {paginationItems.map((item, index) =>
@@ -180,7 +152,7 @@ export function DataTable<T extends Record<string, unknown>>({
           disabled={!table.getCanNextPage()}
           aria-label="다음 페이지"
         >
-          <ChevronRightIcon />
+          <ChevronRight aria-hidden="true" className="h-4 w-4" />
         </button>
       </div>
     </div>

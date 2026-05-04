@@ -144,8 +144,9 @@ export async function createEventAction(formData: FormData) {
     eventDate: formString(formData, "eventDate"),
     startsAt: formString(formData, "startsAt"),
     endsAt: formString(formData, "endsAt"),
-    timeslotMinutes: formNumber(formData, "timeslotMinutes", 30),
+    timeslotMinutes: formNumber(formData, "timeslotMinutes", 60),
     capacity: formNumber(formData, "capacity", 20),
+    enableTournament: formData.get("enableTournament") === "on",
     tournamentCapacity: formNumber(formData, "tournamentCapacity", 32)
   });
   revalidatePath("/admin");

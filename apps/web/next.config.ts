@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@libsql/client", "libsql"],
+  serverExternalPackages: ["@libsql/client", "libsql", "postgres"],
   transpilePackages: ["@scheduler/config", "@scheduler/db", "@scheduler/domain", "@scheduler/ui"],
   webpack: (config, { isServer }) => {
     if (isServer) {
@@ -10,7 +10,9 @@ const nextConfig: NextConfig = {
           if (
             request === "@libsql/client" ||
             request === "libsql" ||
+            request === "postgres" ||
             request === "drizzle-orm/libsql" ||
+            request === "drizzle-orm/postgres-js" ||
             request?.startsWith("@libsql/")
           ) {
             return callback(null, `commonjs ${request}`);

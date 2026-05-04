@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Plus, X } from "lucide-react";
 import { manualOverbookAction } from "@/app/actions";
 import { formatDateTime } from "@/lib/format";
 
@@ -15,10 +16,11 @@ type ManualReservationSlot = {
 
 type ManualReservationModalProps = {
   eventId: string;
+  enableTournament: boolean;
   timeslots: ManualReservationSlot[];
 };
 
-export function ManualReservationModal({ eventId, timeslots }: ManualReservationModalProps) {
+export function ManualReservationModal({ eventId, enableTournament, timeslots }: ManualReservationModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeTimerRef = useRef<number | null>(null);
   const [isClosing, setIsClosing] = useState(false);
@@ -48,6 +50,7 @@ export function ManualReservationModal({ eventId, timeslots }: ManualReservation
   return (
     <>
       <button className="btn btn-accent btn-sm text-white" type="button" onClick={openModal}>
+        <Plus aria-hidden="true" className="h-4 w-4" />
         수동 예약 추가
       </button>
 
@@ -67,7 +70,7 @@ export function ManualReservationModal({ eventId, timeslots }: ManualReservation
               <p className="mt-1 text-sm text-base-content/60">현장에서 운영자가 확인한 참가자를 예약에 직접 추가합니다.</p>
             </div>
             <button className="btn btn-ghost btn-sm" type="button" onClick={closeModal} aria-label="닫기">
-              닫기
+              <X aria-hidden="true" className="h-4 w-4" />
             </button>
           </div>
 
@@ -111,10 +114,12 @@ export function ManualReservationModal({ eventId, timeslots }: ManualReservation
               <input name="guardianConfirmed" type="checkbox" className="checkbox" />
               <span className="label-text">보호자 동행 확인</span>
             </label>
-            <label className="label cursor-pointer justify-start gap-3">
-              <input name="tournament" type="checkbox" className="checkbox" />
-              <span className="label-text">대회 참가 신청</span>
-            </label>
+            {enableTournament && (
+              <label className="label cursor-pointer justify-start gap-3">
+                <input name="tournament" type="checkbox" className="checkbox" />
+                <span className="label-text">대회 참가 신청</span>
+              </label>
+            )}
             <div className="flex justify-end gap-2 md:col-span-2">
               <button className="btn btn-ghost" type="button" onClick={closeModal}>
                 취소

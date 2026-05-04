@@ -66,6 +66,7 @@ export async function createManagedEvent(
     endsAt: string;
     timeslotMinutes: number;
     capacity: number;
+    enableTournament?: boolean;
     tournamentCapacity?: number;
   }
 ) {
@@ -98,7 +99,7 @@ export async function createManagedEvent(
       allowMultipleBooking: false,
       allowParticipantCancellation: true,
       participantCancelUntilMinutesBeforeStart: 0,
-      enableTournament: true,
+      enableTournament: input.enableTournament ?? true,
       tournamentCapacity: parsePositiveInt(input.tournamentCapacity ?? 32, 32),
       minGuardianRequiredGrade: 1,
       maxGuardianRequiredGrade: 4,
