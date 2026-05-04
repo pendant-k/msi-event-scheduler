@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getSchedule, searchCheckInRows } from "@scheduler/domain";
-import { ArrowRight, Clock3, ClipboardList, Download, LayoutDashboard } from "lucide-react";
+import { ArrowRight, Clock3, ClipboardList, Download, LayoutDashboard, Trophy } from "lucide-react";
 import { Schedule } from "@/components/schedule";
 import { getAdminUserId } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
@@ -33,6 +33,18 @@ export default async function AdminEventPage({ params }: { params: Promise<{ eve
       iconClass: "bg-amber-50 text-amber-700",
       buttonClass: "bg-amber-500 text-white hover:bg-amber-600"
     },
+    ...(schedule.event.enableTournament
+      ? [
+          {
+            href: `/admin/events/${eventId}/tournament`,
+            title: "대회 관리",
+            description: "대회 체크인, 참가 명단, 토너먼트 대진표를 관리합니다.",
+            Icon: Trophy,
+            iconClass: "bg-violet-50 text-violet-700",
+            buttonClass: "bg-violet-600 text-white hover:bg-violet-700"
+          }
+        ]
+      : []),
     {
       href: `/admin/events/${eventId}/export`,
       title: "CSV Export",

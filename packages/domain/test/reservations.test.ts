@@ -7,6 +7,7 @@ import {
   cancelReservation,
   createReservation,
   listReservationsForAccess,
+  markNoShowReservation,
   searchCheckInRows
 } from "../src/reservations";
 import { DomainError } from "../src/errors";
@@ -297,5 +298,53 @@ describeWithDb("reservation domain", () => {
     } finally {
       await second.client.close();
     }
+  });
+
+  it("counts tournament capacity globally across active tournament reservations only", async () => {
+    const sessionA = await access("01044440001", db);
+    const reservation = await createReservation(db, {
+      eventId: "event-test",
+      accessId: sessionA.accessId,
+      timeslotId: "slot-test",
+      name: "대회A",
+      school: "전역초",
+      grade: 5,
+      guardianConfirmed: false,
+      tournament: true
+    });
+
+    const sessionB = await access("01044440002", db);
+    await expect(
+      createReservation(db, {
+        eventId: "event-test",
+        accessId: sessionB.accessId,
+        timeslotId: "slot-test",
+        name: "대회B",
+        school: "전역초",
+        grade: 5,
+        guardianConfirmed: false,
+        tournament: true
+      })
+    ).rejects.toMatchObject({ code: "tournament_full" } satisfies Partial<DomainError>);
+
+    await markNoShowReservation(db, {
+      eventId: "event-test",
+      reservationId: reservation.id,
+      adminUserId: "admin-test"
+    });
+
+    await createReservation(db, {
+      eventId: "event-test",
+      accessId: sessionB.accessId,
+      timeslotId: "slot-test",
+      name: "대회B",
+      school: "전역초",
+      grade: 5,
+      guardianConfirmed: false,
+      tournament: true
+    });
+
+    const rows = await searchCheckInRows(db, { eventId: "event-test" });
+    expect(rows.filter((row) => row.tournament && row.status !== "NO_SHOW")).toHaveLength(1);
   });
 });

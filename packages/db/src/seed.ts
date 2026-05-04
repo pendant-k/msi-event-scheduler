@@ -1,6 +1,18 @@
 import { createDatabase, initializeDatabase } from "./client";
-import { eventAdmins, eventDays, events, participantAccesses, participants, reservations, timeslots } from "./schema";
-import { sql } from "drizzle-orm";
+import {
+  eventAdmins,
+  eventDays,
+  events,
+  participantAccesses,
+  participants,
+  reservations,
+  timeslots,
+  tournamentCheckins,
+  tournamentEntrants,
+  tournamentMatches,
+  tournaments
+} from "./schema";
+import { eq, sql } from "drizzle-orm";
 
 const now = () => new Date().toISOString();
 const demoPasswordHash = "$2b$10$PE9h7UffDCh0AbaXsGGfZOeAgAH3yk.vRT.2F/s2pcR4ulVhQ3Qe2";
@@ -58,6 +70,7 @@ async function main() {
         name: "2026 어린이날 미니카 대회",
         description: "어린이날 한정 미니카 타임어택, 튜닝 체험, 결승 레이스 예약",
         status: "PUBLISHED",
+        enableTournament: true,
         tournamentCapacity: 48,
         updatedAt: timestamp
       }
@@ -280,6 +293,142 @@ async function main() {
           cancelledAt: reservation.cancelledAt,
           cancelledBy: reservation.cancelledBy,
           cancellationReason: reservation.cancellationReason,
+          updatedAt: timestamp
+        }
+      });
+  }
+
+  const tournamentId = "seed-tournament-minicar";
+  const entrantRows = [
+    { id: "seed-entrant-minicar-1", reservationId: "seed-reservation-minicar-1", seed: 1 },
+    { id: "seed-entrant-minicar-2", reservationId: "seed-reservation-minicar-2", seed: 2 }
+  ];
+  for (const reservation of reservationRows.filter((row) => row.tournament)) {
+    await db
+      .insert(tournamentCheckins)
+      .values({
+        id: `seed-tournament-checkin-${reservation.id}`,
+        eventId,
+        reservationId: reservation.id,
+        checkedInAt: timestamp,
+        checkedInBy: "local-super-admin",
+        cancelledAt: null,
+        cancelledBy: null,
+        createdAt: timestamp,
+        updatedAt: timestamp
+      })
+      .onConflictDoUpdate({
+        target: tournamentCheckins.reservationId,
+        set: {
+          checkedInAt: timestamp,
+          checkedInBy: "local-super-admin",
+          cancelledAt: null,
+          cancelledBy: null,
+          updatedAt: timestamp
+        }
+      });
+  }
+  await db.delete(tournaments).where(eq(tournaments.eventId, eventId));
+  await db
+    .insert(tournaments)
+    .values({
+      id: tournamentId,
+      eventId,
+      status: "DRAFT",
+      bracketSize: 4,
+      includeThirdPlace: true,
+      seedingMode: "CHECK_IN_ORDER",
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      startedAt: null,
+      completedAt: null
+    })
+    .onConflictDoUpdate({
+      target: tournaments.eventId,
+      set: {
+        status: "DRAFT",
+        bracketSize: 4,
+        includeThirdPlace: true,
+        seedingMode: "CHECK_IN_ORDER",
+        updatedAt: timestamp,
+        startedAt: null,
+        completedAt: null
+      }
+    });
+  for (const entrant of entrantRows) {
+    await db
+      .insert(tournamentEntrants)
+      .values({
+        ...entrant,
+        tournamentId,
+        createdAt: timestamp
+      })
+      .onConflictDoUpdate({
+        target: tournamentEntrants.id,
+        set: {
+          reservationId: entrant.reservationId,
+          seed: entrant.seed
+        }
+      });
+  }
+  const tournamentMatchRows = [
+    {
+      id: "seed-match-minicar-main-1",
+      kind: "MAIN" as const,
+      round: 1,
+      matchIndex: 1,
+      entrantAId: "seed-entrant-minicar-1",
+      entrantBId: "seed-entrant-minicar-2",
+      winnerEntrantId: null,
+      status: "READY" as const
+    },
+    {
+      id: "seed-match-minicar-main-2",
+      kind: "MAIN" as const,
+      round: 1,
+      matchIndex: 2,
+      entrantAId: null,
+      entrantBId: null,
+      winnerEntrantId: null,
+      status: "PENDING" as const
+    },
+    {
+      id: "seed-match-minicar-final",
+      kind: "MAIN" as const,
+      round: 2,
+      matchIndex: 1,
+      entrantAId: null,
+      entrantBId: null,
+      winnerEntrantId: null,
+      status: "PENDING" as const
+    },
+    {
+      id: "seed-match-minicar-third",
+      kind: "THIRD_PLACE" as const,
+      round: 1,
+      matchIndex: 1,
+      entrantAId: null,
+      entrantBId: null,
+      winnerEntrantId: null,
+      status: "PENDING" as const
+    }
+  ];
+  for (const match of tournamentMatchRows) {
+    await db
+      .insert(tournamentMatches)
+      .values({
+        ...match,
+        tournamentId,
+        createdAt: timestamp,
+        updatedAt: timestamp
+      })
+      .onConflictDoUpdate({
+        target: tournamentMatches.id,
+        set: {
+          entrantAId: match.entrantAId,
+          entrantBId: match.entrantBId,
+          winnerEntrantId: match.winnerEntrantId,
+          status: match.status,
           updatedAt: timestamp
         }
       });

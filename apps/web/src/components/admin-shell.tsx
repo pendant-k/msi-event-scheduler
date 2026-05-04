@@ -14,6 +14,7 @@ import {
   Plus,
   Rows3,
   ShieldCheck,
+  Trophy,
   X,
   type LucideIcon
 } from "lucide-react";
@@ -23,6 +24,7 @@ type AdminEventLink = {
   name: string;
   status: string;
   description: string | null;
+  enableTournament: boolean;
   eventDate: string | null;
   createdAt: string;
 };
@@ -46,6 +48,7 @@ const globalNavItems = [
 const eventNavItems = [
   { key: "hub", label: "운영 허브", icon: LayoutDashboard, path: "" },
   { key: "reservations", label: "예약/체크인", icon: Rows3, path: "/reservations" },
+  { key: "tournament", label: "대회", icon: Trophy, path: "/tournament", tournamentOnly: true },
   { key: "schedule", label: "시간표", icon: Clock, path: "/schedule" },
   { key: "public", label: "예약 페이지", icon: ExternalLink, path: null }
 ] as const;
@@ -150,7 +153,7 @@ function AdminSidebar({ events, onNavigate, onClose }: { events: AdminEventLink[
         <div className="admin-nav-section">
           <div className="admin-nav-section-label">Event Menu</div>
           {activeEvent ? (
-            eventNavItems.map((item) => {
+            eventNavItems.filter((item) => !("tournamentOnly" in item) || activeEvent.enableTournament).map((item) => {
               const baseHref = `/admin/events/${activeEvent.id}`;
               const href = item.path === null ? `/event/${activeEvent.id}` : `${baseHref}${item.path}`;
               const Icon = item.icon;

@@ -6,6 +6,10 @@ alter table reservations enable row level security;
 alter table participants enable row level security;
 alter table participant_accesses enable row level security;
 alter table participant_sessions enable row level security;
+alter table tournament_checkins enable row level security;
+alter table tournaments enable row level security;
+alter table tournament_entrants enable row level security;
+alter table tournament_matches enable row level security;
 alter table admin_logs enable row level security;
 
 create policy "public can read published events"
@@ -25,7 +29,7 @@ using (
 
 create policy "admins can read assigned event data"
 on event_admins for select
-using (admin_user_id = auth.uid());
+using (admin_user_id = auth.uid()::text);
 
 -- Participant access, reservation mutation, and CSV export are intentionally
 -- server-side only. Use service role RPC/server actions for those flows.

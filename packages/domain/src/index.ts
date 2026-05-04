@@ -3,4 +3,5 @@ export * from "./errors";
 export * from "./events";
 export * from "./participantAccess";
 export * from "./reservations";
+export * from "./tournaments";
 export * from "./utils";

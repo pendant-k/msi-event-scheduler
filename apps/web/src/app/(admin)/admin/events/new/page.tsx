@@ -49,8 +49,9 @@ export default async function NewEventPage() {
             <input name="capacity" type="number" min={1} className="input input-bordered" defaultValue={20} required />
           </label>
           <label className="form-control">
-            <span className="label-text">대회 정원</span>
+            <span className="label-text">행사 전체 대회 정원</span>
             <input name="tournamentCapacity" type="number" min={1} className="input input-bordered" defaultValue={32} required />
+            <span className="label-text-alt text-base-content/60">일정별 정원과 별개로, 대회 참가 신청자만 행사 전체에서 카운트합니다.</span>
           </label>
         </div>
         <label className="label cursor-pointer justify-start gap-3 rounded-lg bg-base-200 px-3">

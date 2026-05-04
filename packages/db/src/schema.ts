@@ -168,6 +168,80 @@ export const reservations = pgTable(
   })
 );
 
+export const tournamentCheckins = pgTable(
+  "tournament_checkins",
+  {
+    id: text("id").primaryKey(),
+    eventId: text("event_id").notNull().references(() => events.id, { onDelete: "cascade" }),
+    reservationId: text("reservation_id").notNull().references(() => reservations.id, { onDelete: "cascade" }),
+    checkedInAt: timestamptz("checked_in_at").notNull(),
+    checkedInBy: text("checked_in_by").notNull(),
+    cancelledAt: timestamptz("cancelled_at"),
+    cancelledBy: text("cancelled_by"),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    updatedAt: timestamptz("updated_at").notNull().defaultNow()
+  },
+  (table) => ({
+    reservationUnique: uniqueIndex("tournament_checkins_reservation_unique").on(table.reservationId),
+    eventIdx: index("idx_tournament_checkins_event").on(table.eventId, table.cancelledAt)
+  })
+);
+
+export const tournaments = pgTable(
+  "tournaments",
+  {
+    id: text("id").primaryKey(),
+    eventId: text("event_id").notNull().references(() => events.id, { onDelete: "cascade" }),
+    status: text("status", { enum: ["DRAFT", "STARTED", "COMPLETED"] }).notNull(),
+    bracketSize: integer("bracket_size").notNull(),
+    includeThirdPlace: boolean("include_third_place").notNull().default(true),
+    seedingMode: text("seeding_mode", { enum: ["MANUAL", "CHECK_IN_ORDER", "RANDOM"] }).notNull(),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    updatedAt: timestamptz("updated_at").notNull().defaultNow(),
+    startedAt: timestamptz("started_at"),
+    completedAt: timestamptz("completed_at")
+  },
+  (table) => ({
+    eventUnique: uniqueIndex("tournaments_event_unique").on(table.eventId)
+  })
+);
+
+export const tournamentEntrants = pgTable(
+  "tournament_entrants",
+  {
+    id: text("id").primaryKey(),
+    tournamentId: text("tournament_id").notNull().references(() => tournaments.id, { onDelete: "cascade" }),
+    reservationId: text("reservation_id").notNull().references(() => reservations.id, { onDelete: "cascade" }),
+    seed: integer("seed").notNull(),
+    createdAt: timestamptz("created_at").notNull().defaultNow()
+  },
+  (table) => ({
+    seedUnique: uniqueIndex("tournament_entrants_seed_unique").on(table.tournamentId, table.seed),
+    reservationUnique: uniqueIndex("tournament_entrants_reservation_unique").on(table.tournamentId, table.reservationId)
+  })
+);
+
+export const tournamentMatches = pgTable(
+  "tournament_matches",
+  {
+    id: text("id").primaryKey(),
+    tournamentId: text("tournament_id").notNull().references(() => tournaments.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: ["MAIN", "THIRD_PLACE"] }).notNull(),
+    round: integer("round").notNull(),
+    matchIndex: integer("match_index").notNull(),
+    entrantAId: text("entrant_a_id").references(() => tournamentEntrants.id, { onDelete: "set null" }),
+    entrantBId: text("entrant_b_id").references(() => tournamentEntrants.id, { onDelete: "set null" }),
+    winnerEntrantId: text("winner_entrant_id").references(() => tournamentEntrants.id, { onDelete: "set null" }),
+    status: text("status", { enum: ["PENDING", "READY", "COMPLETED"] }).notNull(),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    updatedAt: timestamptz("updated_at").notNull().defaultNow()
+  },
+  (table) => ({
+    positionUnique: uniqueIndex("tournament_matches_position_unique").on(table.tournamentId, table.kind, table.round, table.matchIndex),
+    tournamentIdx: index("idx_tournament_matches_tournament").on(table.tournamentId, table.kind, table.round)
+  })
+);
+
 export const adminLogs = pgTable("admin_logs", {
   id: text("id").primaryKey(),
   eventId: text("event_id").notNull().references(() => events.id, { onDelete: "cascade" }),
@@ -186,3 +260,7 @@ export type Timeslot = typeof timeslots.$inferSelect;
 export type Reservation = typeof reservations.$inferSelect;
 export type ParticipantAccess = typeof participantAccesses.$inferSelect;
 export type Participant = typeof participants.$inferSelect;
+export type Tournament = typeof tournaments.$inferSelect;
+export type TournamentCheckin = typeof tournamentCheckins.$inferSelect;
+export type TournamentEntrant = typeof tournamentEntrants.$inferSelect;
+export type TournamentMatch = typeof tournamentMatches.$inferSelect;

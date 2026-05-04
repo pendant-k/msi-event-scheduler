@@ -12,3 +12,4 @@ data
 .env.local
 /logo.png
 supabase/.temp
+supabase/.branches

@@ -22,6 +22,7 @@ export async function listAdminEvents(db: SchedulerDb, adminUserId = localAdminU
       name: events.name,
       status: events.status,
       description: events.description,
+      enableTournament: events.enableTournament,
       eventDate: sql<string | null>`min(${eventDays.eventDate})`,
       createdAt: events.createdAt
     })

@@ -8,6 +8,7 @@ import {
   createOrLoginParticipantAccess,
   createReservation,
   createTimeslot,
+  deleteManagedEvent,
   deleteTimeslot,
   DomainError,
   getOrCreateParticipantAccessByAdmin,
@@ -15,6 +16,13 @@ import {
   localAdminUserId,
   manualOverbookReservation,
   markNoShowReservation,
+  cancelTournamentCheckIn,
+  checkInTournamentEntrant,
+  createTournamentDraft,
+  recordMatchWinner,
+  replaceMatchEntrant,
+  startTournament,
+  updateTournamentSeed,
   updateTimeslotSettings
 } from "@scheduler/domain";
 import { revalidatePath } from "next/cache";
@@ -182,6 +190,18 @@ export async function createEventAction(formData: FormData) {
   redirect(`/admin/events/${result.eventId}`);
 }
 
+export async function deleteEventAction(formData: FormData) {
+  const eventId = formString(formData, "eventId");
+  const adminUserId = await getAdminUserId();
+  if (!adminUserId) redirect("/admin");
+  const db = await getAppDb();
+  await deleteManagedEvent(db, { adminUserId, eventId });
+  revalidatePath("/admin");
+  revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/event/${eventId}`);
+  redirect("/admin");
+}
+
 export async function addEventDayAction(formData: FormData) {
   const eventId = formString(formData, "eventId");
   const adminUserId = await getAdminUserId();
@@ -317,4 +337,97 @@ export async function manualOverbookAction(formData: FormData) {
   revalidatePath(`/admin/events/${eventId}/schedule`);
   revalidatePath(`/event/${eventId}`);
   revalidatePath(`/event/${eventId}/schedule`);
+}
+
+export async function tournamentCheckInAction(formData: FormData) {
+  const eventId = formString(formData, "eventId");
+  const adminUserId = await getAdminUserId();
+  if (!adminUserId) redirect("/admin");
+  await checkInTournamentEntrant(await getAppDb(), {
+    adminUserId,
+    eventId,
+    reservationId: formString(formData, "reservationId")
+  });
+  revalidatePath(`/admin/events/${eventId}/tournament`);
+}
+
+export async function cancelTournamentCheckInAction(formData: FormData) {
+  const eventId = formString(formData, "eventId");
+  const adminUserId = await getAdminUserId();
+  if (!adminUserId) redirect("/admin");
+  await cancelTournamentCheckIn(await getAppDb(), {
+    adminUserId,
+    eventId,
+    reservationId: formString(formData, "reservationId")
+  });
+  revalidatePath(`/admin/events/${eventId}/tournament`);
+}
+
+export async function createTournamentDraftAction(formData: FormData) {
+  const eventId = formString(formData, "eventId");
+  const adminUserId = await getAdminUserId();
+  if (!adminUserId) redirect("/admin");
+  const reservationIds = formData
+    .getAll("reservationId")
+    .map((value) => String(value).trim())
+    .filter(Boolean);
+  await createTournamentDraft(await getAppDb(), {
+    adminUserId,
+    eventId,
+    bracketSize: formNumber(formData, "bracketSize", 32),
+    seedingMode: formString(formData, "seedingMode") === "RANDOM" ? "RANDOM" : formString(formData, "seedingMode") === "MANUAL" ? "MANUAL" : "CHECK_IN_ORDER",
+    reservationIds
+  });
+  revalidatePath(`/admin/events/${eventId}/tournament`);
+}
+
+export async function updateTournamentSeedAction(formData: FormData) {
+  const eventId = formString(formData, "eventId");
+  const adminUserId = await getAdminUserId();
+  if (!adminUserId) redirect("/admin");
+  await updateTournamentSeed(await getAppDb(), {
+    adminUserId,
+    tournamentId: formString(formData, "tournamentId"),
+    seed: formNumber(formData, "seed", 1),
+    reservationId: formString(formData, "reservationId") || null
+  });
+  revalidatePath(`/admin/events/${eventId}/tournament`);
+}
+
+export async function startTournamentAction(formData: FormData) {
+  const eventId = formString(formData, "eventId");
+  const adminUserId = await getAdminUserId();
+  if (!adminUserId) redirect("/admin");
+  await startTournament(await getAppDb(), {
+    adminUserId,
+    tournamentId: formString(formData, "tournamentId")
+  });
+  revalidatePath(`/admin/events/${eventId}/tournament`);
+}
+
+export async function recordMatchWinnerAction(formData: FormData) {
+  const eventId = formString(formData, "eventId");
+  const adminUserId = await getAdminUserId();
+  if (!adminUserId) redirect("/admin");
+  await recordMatchWinner(await getAppDb(), {
+    adminUserId,
+    tournamentId: formString(formData, "tournamentId"),
+    matchId: formString(formData, "matchId"),
+    winnerEntrantId: formString(formData, "winnerEntrantId")
+  });
+  revalidatePath(`/admin/events/${eventId}/tournament`);
+}
+
+export async function replaceMatchEntrantAction(formData: FormData) {
+  const eventId = formString(formData, "eventId");
+  const adminUserId = await getAdminUserId();
+  if (!adminUserId) redirect("/admin");
+  await replaceMatchEntrant(await getAppDb(), {
+    adminUserId,
+    tournamentId: formString(formData, "tournamentId"),
+    matchId: formString(formData, "matchId"),
+    side: formString(formData, "side") === "B" ? "B" : "A",
+    entrantId: formString(formData, "entrantId") || null
+  });
+  revalidatePath(`/admin/events/${eventId}/tournament`);
 }

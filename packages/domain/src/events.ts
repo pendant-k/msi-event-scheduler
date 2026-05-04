@@ -148,6 +148,11 @@ export async function createManagedEvent(
   });
 }
 
+export async function deleteManagedEvent(db: SchedulerDb, input: { adminUserId: string; eventId: string }) {
+  await assertEventAdmin(db, input.eventId, input.adminUserId);
+  await db.delete(events).where(eq(events.id, input.eventId));
+}
+
 export async function createEventDay(
   db: SchedulerDb,
   input: { adminUserId: string; eventId: string; eventDate: string; label?: string; startsAt?: string; endsAt?: string }

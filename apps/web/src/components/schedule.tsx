@@ -123,8 +123,12 @@ export function Schedule({
   timeslots: Timeslot[];
   mode: "participant" | "admin";
 }) {
+  const [showHiddenSlots, setShowHiddenSlots] = useState(false);
+  const hiddenTimeslotCount = timeslots.filter((slot) => slot.status === "HIDDEN").length;
   const visibleTimeslots = mode === "participant" ? timeslots.filter((slot) => slot.status !== "HIDDEN") : timeslots;
-  const adminTimetable = mode === "admin" ? getAdminTimetable(day, visibleTimeslots) : { rows: [], blocks: [], laneCount: 1, ticks: [] };
+  const adminDisplayTimeslots =
+    mode === "admin" && !showHiddenSlots ? visibleTimeslots.filter((slot) => slot.status !== "HIDDEN") : visibleTimeslots;
+  const adminTimetable = mode === "admin" ? getAdminTimetable(day, adminDisplayTimeslots) : { rows: [], blocks: [], laneCount: 1, ticks: [] };
   const [selectedSlot, setSelectedSlot] = useState<Timeslot | null>(null);
   const [detailTab, setDetailTab] = useState<"overview" | "settings" | "reservations">("overview");
   const [slotRows, setSlotRows] = useState<AdminReservationRow[]>([]);
@@ -164,7 +168,23 @@ export function Schedule({
           <h2 className="text-xl font-semibold">전체 시간표</h2>
           <p className="text-sm text-base-content/60">{day?.eventDate ?? "날짜 미정"}</p>
         </div>
-        {mode === "admin" && <AdminRefreshButton label="시간표 새로고침" />}
+        {mode === "admin" && (
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {hiddenTimeslotCount > 0 && (
+              <label className="timetable-hidden-toggle">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm"
+                  checked={showHiddenSlots}
+                  onChange={(event) => setShowHiddenSlots(event.target.checked)}
+                />
+                <span>숨김 일정 표시</span>
+                <strong>{hiddenTimeslotCount}</strong>
+              </label>
+            )}
+            <AdminRefreshButton label="시간표 새로고침" />
+          </div>
+        )}
       </div>
 
       {mode === "participant" && (
@@ -271,7 +291,7 @@ export function Schedule({
                   return (
                     <button
                       key={slot.id}
-                      className={`timetable-slot-block schedule-load-${loadState}`}
+                      className={`timetable-slot-block schedule-load-${loadState} ${slot.status === "HIDDEN" ? "timetable-slot-hidden" : ""}`}
                       style={{ gridColumn: lane + 1, gridRow: `${startIndex + 1} / span ${span}` }}
                       type="button"
                       onClick={() => setSelectedSlot(slot)}

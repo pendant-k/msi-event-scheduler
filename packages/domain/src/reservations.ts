@@ -1,4 +1,4 @@
-import { and, count, desc, eq, like, ne, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, like, or, sql } from "drizzle-orm";
 import type { SchedulerDb } from "@scheduler/db";
 import {
   adminLogs,
@@ -14,6 +14,8 @@ import { duplicateKey, id, normalizePhone, nowIso, shortCode } from "./utils";
 type Actor =
   | { type: "participant"; accessId: string }
   | { type: "admin"; adminUserId: string };
+
+const activeReservationStatusSql = sql`${reservations.status} in ('RESERVED', 'LATE_RESERVED', 'CHECKED_IN')`;
 
 export async function createReservation(
   db: SchedulerDb,
@@ -56,7 +58,7 @@ export async function createReservation(
       const tournamentCount = await tx
         .select({ value: count() })
         .from(reservations)
-        .where(and(eq(reservations.eventId, event.id), eq(reservations.tournament, true), ne(reservations.status, "CANCELLED")));
+        .where(and(eq(reservations.eventId, event.id), eq(reservations.tournament, true), activeReservationStatusSql));
       if ((tournamentCount[0]?.value ?? 0) >= event.tournamentCapacity) {
         throw new DomainError("tournament_full", "대회 신청이 마감되었습니다.");
       }
