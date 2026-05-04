@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-quer
 import type { EventDay, Timeslot } from "@scheduler/db";
 import { RefreshCw } from "lucide-react";
 import { createReservationAction } from "@/app/actions";
-import { formatTime } from "@/lib/format";
+import { formatClockTime, formatTime } from "@/lib/format";
 import { PrivacyNoticeModal } from "./privacy-notice-modal";
 
 type ParticipantReservationProps = {
@@ -66,11 +66,7 @@ function ParticipantReservationInner({ eventId, enableTournament, day, timeslots
   const visibleTimeslots = useMemo(() => activeTimeslots.filter((slot) => slot.status !== "HIDDEN"), [activeTimeslots]);
   const openSlots = useMemo(() => visibleTimeslots.filter(getBookable), [visibleTimeslots]);
   const [selectedTimeslotId, setSelectedTimeslotId] = useState(openSlots[0]?.id ?? "");
-  const lastUpdatedAt = new Date(data.updatedAt).toLocaleTimeString("ko-KR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit"
-  });
+  const lastUpdatedAt = formatClockTime(data.updatedAt);
 
   useEffect(() => {
     if (!openSlots.some((slot) => slot.id === selectedTimeslotId)) {

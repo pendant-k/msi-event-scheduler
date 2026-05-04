@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-quer
 import { DataTable } from "@scheduler/ui/data-table";
 import { Ban, RefreshCw, UserX } from "lucide-react";
 import { cancelAdminReservationAction, checkInAction, markNoShowAction } from "@/app/actions";
-import { formatDateTime } from "@/lib/format";
+import { formatClockTime, formatDateTime } from "@/lib/format";
 import { getReservationStatusLabel, getReservationStatusTone, isActiveReservationStatus } from "@/lib/status-labels";
 
 export type AdminReservationRow = {
@@ -77,11 +77,7 @@ function AdminLiveReservationsInner({ eventId, initialRows, initialUpdatedAt, mo
     refetchIntervalInBackground: true
   });
   const rows = data.rows;
-  const lastUpdatedAt = new Date(data.updatedAt).toLocaleTimeString("ko-KR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit"
-  });
+  const lastUpdatedAt = formatClockTime(data.updatedAt);
 
   const tableRows = rows.map((row) => ({
     time: formatDateTime(row.startsAt),
