@@ -16,7 +16,7 @@ export type AdminReservationRow = {
   participantName: string;
   school: string;
   grade: number;
-  maskedPhone: string;
+  phoneNumber: string;
   startsAt: string;
   endsAt: string;
   timeslotId: string;
@@ -84,7 +84,7 @@ function AdminLiveReservationsInner({ eventId, initialRows, initialUpdatedAt, mo
     name: row.participantName,
     school: row.school,
     grade: `${row.grade}`,
-    phone: row.maskedPhone,
+    phone: row.phoneNumber,
     status: getReservationStatusLabel(row.status),
     tournament: row.tournament ? "신청" : "-"
   }));
@@ -105,7 +105,7 @@ function AdminLiveReservationsInner({ eventId, initialRows, initialUpdatedAt, mo
                   {row.participantName} · {row.school} · {row.grade}학년
                 </div>
                 <div className="text-sm text-base-content/60">
-                  {formatDateTime(row.startsAt)} · {row.maskedPhone} · {row.reservationCode}
+                  {formatDateTime(row.startsAt)} · {row.phoneNumber} · {row.reservationCode}
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -176,7 +176,7 @@ function AdminLiveReservationsInner({ eventId, initialRows, initialUpdatedAt, mo
                     <span>{row.school}</span>
                     <span>{row.grade}학년</span>
                     <span>{formatDateTime(row.startsAt)}</span>
-                    <span>{row.maskedPhone}</span>
+                    <span>{row.phoneNumber}</span>
                     <span>{row.reservationCode}</span>
                   </div>
                 </div>

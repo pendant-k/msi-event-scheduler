@@ -10,7 +10,7 @@ type ExportReservation = {
   name: string;
   school: string;
   grade: number;
-  maskedPhone: string;
+  phoneNumber: string;
   status: string;
   tournament: boolean;
   reservationCode: string;
@@ -50,7 +50,7 @@ function reservationSummary(reservation: ExportReservation, index: number) {
   const tournament = reservation.tournament ? ", 대회 참가" : "";
   return `${index + 1}. ${reservation.name} (${reservation.school} ${reservation.grade}학년, ${getReservationStatusLabel(
     reservation.status
-  )}${tournament}, ${reservation.maskedPhone})`;
+  )}${tournament}, ${reservation.phoneNumber})`;
 }
 
 function countByStatus(reservationsForSlot: ExportReservation[], status: string) {
@@ -89,7 +89,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ eventId: s
       participantName: participants.name,
       school: participants.school,
       grade: participants.grade,
-      phoneLast4: participantAccesses.phoneLast4
+      phoneNumber: participantAccesses.phoneNumber
     })
     .from(timeslots)
     .innerJoin(events, eq(events.id, timeslots.eventId))
@@ -118,7 +118,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ eventId: s
         name: row.participantName,
         school: row.school,
         grade: row.grade,
-        maskedPhone: `****${row.phoneLast4 ?? ""}`,
+        phoneNumber: row.phoneNumber ?? "",
         status: row.reservationStatus,
         tournament: row.tournament ?? false,
         reservationCode: row.reservationCode ?? "",
@@ -169,7 +169,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ eventId: s
       cancelledCount,
       tournamentCount,
       slot.reservations.length > 0 ? slot.reservations.map(reservationSummary).join("\n") : "예약 없음",
-      slot.reservations.map((reservation) => reservation.maskedPhone).join("\n"),
+      slot.reservations.map((reservation) => reservation.phoneNumber).join("\n"),
       slot.reservations.map((reservation) => reservation.reservationCode).join("\n"),
       slot.reservations.map((reservation) => reservation.checkInCode).join("\n")
     ]);
