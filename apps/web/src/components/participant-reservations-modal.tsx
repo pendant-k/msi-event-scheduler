@@ -46,16 +46,21 @@ export function ParticipantReservationsModal({ eventId, rows, authenticated, def
         <ClipboardList className="size-4" aria-hidden="true" />
         내 예약 확인
       </button>
-      <dialog ref={dialogRef} className="modal" onClose={() => setOpen(false)}>
-        <div className="modal-box max-w-2xl p-0">
-          <div className="flex items-start justify-between gap-3 border-b border-base-200 p-4">
-            <div>
+      <dialog ref={dialogRef} className="modal participant-reservations-modal" onClose={() => setOpen(false)}>
+        <div className="modal-box p-0">
+          <div className="participant-reservations-modal-header border-b border-base-200 p-4">
+            <div className="min-w-0">
               <h2 className="text-lg font-bold">내 예약 확인</h2>
               <p className="mt-1 text-sm text-base-content/60">
                 {authenticated ? "예약 내역과 상태를 확인합니다." : "예약 시 사용한 전화번호와 비밀번호로 확인합니다."}
               </p>
             </div>
-            <button className="btn btn-ghost btn-sm btn-square" type="button" aria-label="닫기" onClick={() => setOpen(false)}>
+            <button
+              className="btn btn-ghost btn-sm participant-reservations-modal-close"
+              type="button"
+              aria-label="닫기"
+              onClick={() => setOpen(false)}
+            >
               <X className="size-4" aria-hidden="true" />
             </button>
           </div>

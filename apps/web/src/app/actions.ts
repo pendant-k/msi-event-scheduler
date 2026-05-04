@@ -218,7 +218,7 @@ export async function updateTimeslotAction(formData: FormData) {
   if (!adminUserId) redirect("/admin");
   const status = formString(formData, "status");
   if (status !== "OPEN" && status !== "CLOSED" && status !== "HIDDEN") {
-    throw new DomainError("invalid_input", "타임슬롯 상태가 올바르지 않습니다.");
+    throw new DomainError("invalid_input", "일정 상태가 올바르지 않습니다.");
   }
   const db = await getAppDb();
   await updateTimeslotSettings(db, {
@@ -247,7 +247,7 @@ export async function updateTimeslotsAction(formData: FormData) {
   for (const timeslotId of slotIds) {
     const status = formString(formData, `status-${timeslotId}`);
     if (status !== "OPEN" && status !== "CLOSED" && status !== "HIDDEN") {
-      throw new DomainError("invalid_input", "타임슬롯 상태가 올바르지 않습니다.");
+      throw new DomainError("invalid_input", "일정 상태가 올바르지 않습니다.");
     }
     await updateTimeslotSettings(db, {
       adminUserId,

@@ -63,7 +63,7 @@ export function ScheduleEditorModals({ eventId, days, defaultCapacity }: Schedul
         </button>
         <button className="btn btn-primary gap-2" type="button" onClick={slotDialog.openModal}>
           <Plus className="size-4" aria-hidden="true" />
-          예외 타임슬롯 추가
+          예외 일정 추가
         </button>
       </div>
 
@@ -130,7 +130,7 @@ export function ScheduleEditorModals({ eventId, days, defaultCapacity }: Schedul
         <div className="modal-box max-w-xl">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-lg font-bold">예외 타임슬롯 추가</h2>
+              <h2 className="text-lg font-bold">예외 일정 추가</h2>
               <p className="mt-1 text-sm text-base-content/60">기본 간격과 다른 회차만 별도로 추가합니다.</p>
             </div>
             <button className="btn btn-ghost btn-sm" type="button" onClick={slotDialog.closeModal} aria-label="닫기">
@@ -167,7 +167,7 @@ export function ScheduleEditorModals({ eventId, days, defaultCapacity }: Schedul
                 추가
               </PendingSubmitButton>
             </div>
-            <FormLoadingModal title="예외 타임슬롯을 추가하고 있습니다" description="선택한 시간대를 시간표에 반영하는 중입니다." />
+            <FormLoadingModal title="예외 일정을 추가하고 있습니다" description="선택한 시간대를 시간표에 반영하는 중입니다." />
           </form>
         </div>
         <div className="modal-backdrop" onClick={slotDialog.closeModal}>

@@ -77,7 +77,7 @@ export function ManualReservationModal({ eventId, enableTournament, timeslots }:
           <form action={manualOverbookAction} className="mt-5 grid gap-3 md:grid-cols-2">
             <input type="hidden" name="eventId" value={eventId} />
             <label className="form-control md:col-span-2">
-              <span className="label-text">타임슬롯</span>
+              <span className="label-text">일정</span>
               <select name="timeslotId" className="select select-bordered" required>
                 {timeslots.map((slot) => (
                   <option key={slot.id} value={slot.id}>

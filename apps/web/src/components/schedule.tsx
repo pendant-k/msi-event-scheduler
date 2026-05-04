@@ -1,4 +1,8 @@
+"use client";
+
 import type { CSSProperties } from "react";
+import { useState } from "react";
+import { Clock, Hash, Users, X } from "lucide-react";
 import type { Event, EventDay, Timeslot } from "@scheduler/db";
 import { formatTime } from "@/lib/format";
 
@@ -15,6 +19,14 @@ const statusLabels = {
   OPEN: "예약 가능",
   CLOSED: "마감",
   HIDDEN: "숨김"
+} as const;
+
+const loadStateLabels = {
+  low: "여유",
+  medium: "보통",
+  high: "혼잡",
+  full: "만석",
+  closed: "예약 불가"
 } as const;
 
 const halfHourMs = 30 * 60 * 1000;
@@ -36,7 +48,7 @@ function isoValue(value: number) {
 }
 
 function getAdminTimetable(day: EventDay | undefined, timeslots: Timeslot[]) {
-  if (timeslots.length === 0 && !day?.startsAt && !day?.endsAt) return { rows: [], blocks: [], laneCount: 1 };
+  if (timeslots.length === 0 && !day?.startsAt && !day?.endsAt) return { rows: [], blocks: [], laneCount: 1, ticks: [] };
 
   const starts = timeslots.map((slot) => dateValue(slot.startsAt));
   const ends = timeslots.map((slot) => dateValue(slot.endsAt));
@@ -74,7 +86,10 @@ function getAdminTimetable(day: EventDay | undefined, timeslots: Timeslot[]) {
       };
     });
 
-  return { rows, blocks, laneCount: Math.max(1, laneEnds.length) };
+  const lastRow = rows.at(-1);
+  const ticks = lastRow ? [...rows.map((row) => row.startsAt), lastRow.endsAt] : [];
+
+  return { rows, blocks, laneCount: Math.max(1, laneEnds.length), ticks };
 }
 
 export function Schedule({
@@ -89,7 +104,11 @@ export function Schedule({
   mode: "participant" | "admin";
 }) {
   const visibleTimeslots = mode === "participant" ? timeslots.filter((slot) => slot.status !== "HIDDEN") : timeslots;
-  const adminTimetable = mode === "admin" ? getAdminTimetable(day, visibleTimeslots) : { rows: [], blocks: [], laneCount: 1 };
+  const adminTimetable = mode === "admin" ? getAdminTimetable(day, visibleTimeslots) : { rows: [], blocks: [], laneCount: 1, ticks: [] };
+  const [selectedSlot, setSelectedSlot] = useState<Timeslot | null>(null);
+  const selectedLoadState = selectedSlot ? getLoadState(selectedSlot) : null;
+  const selectedRemaining = selectedSlot ? Math.max(0, selectedSlot.capacity - selectedSlot.reservedCount) : 0;
+  const selectedUsage = selectedSlot?.capacity ? Math.round((selectedSlot.reservedCount / selectedSlot.capacity) * 100) : 0;
 
   return (
     <section className={`schedule-section schedule-${mode} space-y-3`}>
@@ -141,17 +160,36 @@ export function Schedule({
               }
             >
               <div className="timetable-corner">시간</div>
-              <div className="timetable-lanes-head">타임슬롯</div>
-              {adminTimetable.rows.map((row, index) => (
-                <div
-                  key={row.id}
-                  className={`timetable-time ${row.hasSlot ? "" : "is-empty"}`}
-                  style={{ gridColumn: 1, gridRow: index + 2 }}
-                >
-                  <span>{formatTime(isoValue(row.startsAt))}</span>
-                  <small>{formatTime(isoValue(row.endsAt))}</small>
-                </div>
-              ))}
+              <div className="timetable-lanes-head">일정</div>
+              <div
+                className="timetable-time-axis"
+                style={
+                  {
+                    gridColumn: 1,
+                    gridRow: `2 / span ${adminTimetable.rows.length}`,
+                    gridTemplateRows: `repeat(${adminTimetable.rows.length}, 3.25rem)`
+                  } satisfies CSSProperties
+                }
+              >
+                {adminTimetable.rows.map((row, index) => (
+                  <div
+                    key={row.id}
+                    className={`timetable-time-row ${row.hasSlot ? "" : "is-empty"}`}
+                    style={{ gridRow: index + 1 }}
+                  />
+                ))}
+                {adminTimetable.ticks.map((tick, index) => (
+                  <div
+                    key={tick}
+                    className={`timetable-time-tick ${index === 0 ? "is-first" : ""} ${
+                      index === adminTimetable.ticks.length - 1 ? "is-last" : ""
+                    }`}
+                    style={{ top: `${(index / adminTimetable.rows.length) * 100}%` }}
+                  >
+                    {formatTime(isoValue(tick))}
+                  </div>
+                ))}
+              </div>
               <div
                 className="timetable-lanes"
                 style={
@@ -180,10 +218,13 @@ export function Schedule({
                 {adminTimetable.blocks.map(({ slot, lane, startIndex, span }) => {
                   const loadState = getLoadState(slot);
                   return (
-                    <div
+                    <button
                       key={slot.id}
                       className={`timetable-slot-block schedule-load-${loadState}`}
                       style={{ gridColumn: lane + 1, gridRow: `${startIndex + 1} / span ${span}` }}
+                      type="button"
+                      onClick={() => setSelectedSlot(slot)}
+                      aria-label={`${formatTime(slot.startsAt)} - ${formatTime(slot.endsAt)} 일정 상세 보기`}
                     >
                       <div className="timetable-slot-title">
                         {formatTime(slot.startsAt)} - {formatTime(slot.endsAt)}
@@ -194,10 +235,78 @@ export function Schedule({
                           예약 {slot.reservedCount}/{slot.capacity}
                         </span>
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
+            </div>
+          )}
+          {selectedSlot && selectedLoadState && (
+            <div className="modal modal-open" role="dialog" aria-modal="true" aria-labelledby="timeslot-detail-title">
+              <div className="modal-box max-w-xl p-0">
+                <div className="flex items-start justify-between gap-3 border-b border-base-200 p-4">
+                  <div className="min-w-0">
+                    <h3 id="timeslot-detail-title" className="text-lg font-bold">
+                      일정 상세
+                    </h3>
+                    <p className="mt-1 text-sm font-semibold text-base-content/65">
+                      {formatTime(selectedSlot.startsAt)} - {formatTime(selectedSlot.endsAt)}
+                    </p>
+                  </div>
+                  <button className="btn btn-ghost btn-sm btn-square" type="button" aria-label="닫기" onClick={() => setSelectedSlot(null)}>
+                    <X className="size-4" aria-hidden="true" />
+                  </button>
+                </div>
+                <div className="grid gap-3 p-4">
+                  <div className="timeslot-detail-hero">
+                    <div>
+                      <div className="timeslot-detail-label">공개 상태</div>
+                      <div className={`timeslot-detail-status schedule-load-${selectedLoadState}`}>{statusLabels[selectedSlot.status]}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="timeslot-detail-label">예약률</div>
+                      <div className="text-xl font-black">{selectedUsage}%</div>
+                    </div>
+                  </div>
+                  <div className="timeslot-detail-grid">
+                    <div className="timeslot-detail-item">
+                      <Clock className="size-4" aria-hidden="true" />
+                      <span>시작</span>
+                      <strong>{formatTime(selectedSlot.startsAt)}</strong>
+                    </div>
+                    <div className="timeslot-detail-item">
+                      <Clock className="size-4" aria-hidden="true" />
+                      <span>종료</span>
+                      <strong>{formatTime(selectedSlot.endsAt)}</strong>
+                    </div>
+                    <div className="timeslot-detail-item">
+                      <Users className="size-4" aria-hidden="true" />
+                      <span>예약</span>
+                      <strong>
+                        {selectedSlot.reservedCount}/{selectedSlot.capacity}
+                      </strong>
+                    </div>
+                    <div className="timeslot-detail-item">
+                      <Users className="size-4" aria-hidden="true" />
+                      <span>잔여</span>
+                      <strong>{selectedRemaining}</strong>
+                    </div>
+                    <div className="timeslot-detail-item">
+                      <Hash className="size-4" aria-hidden="true" />
+                      <span>일정 ID</span>
+                      <strong className="truncate">{selectedSlot.id}</strong>
+                    </div>
+                    <div className="timeslot-detail-item">
+                      <Users className="size-4" aria-hidden="true" />
+                      <span>부하</span>
+                      <strong>{loadStateLabels[selectedLoadState]}</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button className="modal-backdrop" type="button" aria-label="닫기" onClick={() => setSelectedSlot(null)}>
+                닫기
+              </button>
             </div>
           )}
         </div>

@@ -44,14 +44,14 @@ export default async function AdminSchedulePage({ params }: { params: Promise<{ 
 
       <section className="surface-flat p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold">슬롯 공개 상태와 정원</h2>
+          <h2 className="text-lg font-semibold">일정 공개 상태와 정원</h2>
           <div className="inline-flex items-center gap-1 rounded-full bg-base-200 px-3 py-1 text-xs font-semibold text-base-content/70">
             <EyeOff className="size-3.5" aria-hidden="true" />
             숨김 {hiddenCount}
           </div>
         </div>
         {schedule.timeslots.length === 0 ? (
-          <div className="admin-empty-hint">등록된 타임슬롯이 없습니다.</div>
+          <div className="admin-empty-hint">등록된 일정이 없습니다.</div>
         ) : (
           <form action={updateTimeslotsAction} className="grid gap-3">
             <input type="hidden" name="eventId" value={eventId} />
@@ -101,7 +101,7 @@ export default async function AdminSchedulePage({ params }: { params: Promise<{ 
                       form={`delete-timeslot-${slot.id}`}
                       formNoValidate
                       disabled={slot.reservedCount > 0}
-                      title={slot.reservedCount > 0 ? "예약 이력이 있는 슬롯은 삭제할 수 없습니다." : "타임슬롯 삭제"}
+                      title={slot.reservedCount > 0 ? "예약 이력이 있는 일정은 삭제할 수 없습니다." : "일정 삭제"}
                     >
                       <Trash2 className="size-4" aria-hidden="true" />
                       삭제
@@ -117,7 +117,7 @@ export default async function AdminSchedulePage({ params }: { params: Promise<{ 
                 전체 수정사항 저장
               </PendingSubmitButton>
             </div>
-            <FormLoadingModal title="시간표 변경사항을 저장하고 있습니다" description="슬롯 정원과 공개 상태를 반영하는 중입니다." />
+            <FormLoadingModal title="시간표 변경사항을 저장하고 있습니다" description="일정 정원과 공개 상태를 반영하는 중입니다." />
           </form>
         )}
         {schedule.timeslots.map((slot) => (

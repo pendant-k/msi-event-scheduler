@@ -39,13 +39,13 @@ export default async function NewEventPage() {
           <KoreanTimeInput name="endsAt" label="종료" defaultValue="17:00" required />
         </div>
         <label className="form-control">
-          <span className="label-text">기본 슬롯 길이(분)</span>
+          <span className="label-text">기본 일정 길이(분)</span>
           <input name="timeslotMinutes" type="number" min={5} className="input input-bordered" defaultValue={60} required />
           <span className="label-text-alt text-base-content/60">특수 회차는 시간표 관리에서 별도로 추가할 수 있습니다.</span>
         </label>
         <div className="grid grid-cols-2 gap-2">
           <label className="form-control">
-            <span className="label-text">슬롯 정원</span>
+            <span className="label-text">일정 정원</span>
             <input name="capacity" type="number" min={1} className="input input-bordered" defaultValue={20} required />
           </label>
           <label className="form-control">
@@ -63,7 +63,7 @@ export default async function NewEventPage() {
         </PendingSubmitButton>
         <FormLoadingModal
           title="행사를 생성하고 있습니다"
-          description="행사 정보와 기본 타임슬롯을 저장하는 중입니다."
+          description="행사 정보와 기본 일정을 저장하는 중입니다."
         />
       </form>
     </div>

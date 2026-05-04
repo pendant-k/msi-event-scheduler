@@ -36,7 +36,7 @@ export default async function AdminEventPage({ params }: { params: Promise<{ eve
     {
       href: `/admin/events/${eventId}/schedule`,
       title: "시간표 관리",
-      description: "행사 날짜, 타임슬롯, 정원과 공개 상태를 수정합니다.",
+      description: "행사 날짜, 일정, 정원과 공개 상태를 수정합니다.",
       Icon: Clock3,
       iconClass: "bg-amber-50 text-amber-700",
       buttonClass: "bg-amber-500 text-white hover:bg-amber-600"
@@ -76,7 +76,7 @@ export default async function AdminEventPage({ params }: { params: Promise<{ eve
           <div className="text-sm text-base-content/60">현장 처리 완료</div>
         </div>
         <div className="stat-flat p-4">
-          <div className="text-sm text-base-content/60">타임슬롯</div>
+          <div className="text-sm text-base-content/60">일정</div>
           <div className="text-2xl font-bold">{schedule.timeslots.length}</div>
           <div className="text-sm text-base-content/60">{schedule.selectedDay?.eventDate ?? "날짜 미정"}</div>
         </div>
