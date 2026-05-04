@@ -28,7 +28,7 @@ Default local URLs:
 Default local admin:
 
 ```text
-admin@example.com
+admin
 password
 ```
 
@@ -36,7 +36,7 @@ password
 
 - Participant access is event-scoped phone + password, not Supabase Auth.
 - Participant sessions are stored in httpOnly cookies.
-- Admin auth is mocked locally and isolated behind an adapter for Supabase Auth email/password.
+- Admin auth is mocked locally with `ADMIN_ID`/`ADMIN_PASSWORD`.
 - QR generation is not implemented in v1; the app provides event URLs only.
 
 ## Deployment

@@ -15,13 +15,13 @@ const eventStatusLabels = {
 export default async function AdminHomePage() {
   const adminUserId = await getAdminUserId();
   if (!adminUserId) {
-    const defaultEmail = process.env.ADMIN_EMAIL ?? "admin@example.com";
+    const defaultAdminId = process.env.ADMIN_ID ?? "admin";
     return (
       <form action={adminLoginAction} className="surface-flat mx-auto max-w-md space-y-3 p-5">
         <h1 className="text-xl font-semibold">관리자 로그인</h1>
-        <input name="email" type="email" className="input input-bordered w-full" defaultValue={defaultEmail} required />
+        <input name="adminId" type="text" className="input input-bordered w-full" defaultValue={defaultAdminId} autoComplete="username" required />
         <input name="password" type="password" className="input input-bordered w-full" placeholder="관리자 비밀번호" required />
-        <p className="text-sm text-base-content/60">Vercel 환경변수에 등록된 관리자 계정으로 로그인합니다.</p>
+        <p className="text-sm text-base-content/60">Vercel 환경변수에 등록된 관리자 아이디로 로그인합니다.</p>
         <button className="btn btn-primary w-full" type="submit">
           로그인
         </button>

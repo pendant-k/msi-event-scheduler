@@ -1,12 +1,14 @@
 export type AdminAuthAdapter = {
-  signInWithPassword(input: { email: string; password: string }): Promise<{ adminUserId: string }>;
+  signInWithPassword(input: { adminId: string; password: string }): Promise<{ adminUserId: string }>;
 };
 
 export const localAdminAuthAdapter: AdminAuthAdapter = {
   async signInWithPassword(input) {
-    const expectedEmail = process.env.ADMIN_EMAIL ?? "admin@example.com";
+    const expectedAdminIds = [process.env.ADMIN_ID?.trim() || "admin", process.env.ADMIN_EMAIL?.trim()].filter(
+      (value): value is string => Boolean(value)
+    );
     const expectedPassword = process.env.ADMIN_PASSWORD ?? "password";
-    if (input.email !== expectedEmail || input.password !== expectedPassword) {
+    if (!expectedAdminIds.includes(input.adminId) || input.password !== expectedPassword) {
       throw new Error("invalid_admin_credentials");
     }
     return { adminUserId: "local-super-admin" };
@@ -14,4 +16,4 @@ export const localAdminAuthAdapter: AdminAuthAdapter = {
 };
 
 // Production adapter hook: replace localAdminAuthAdapter with Supabase Auth
-// email/password sign-in while keeping admin routes unchanged.
+// id/password sign-in while keeping admin routes unchanged.

@@ -16,7 +16,7 @@ Required production values:
 ```text
 DATABASE_URL=postgresql://...
 PARTICIPANT_SESSION_SECRET=...
-ADMIN_EMAIL=...
+ADMIN_ID=...
 ADMIN_PASSWORD=...
 NEXT_PUBLIC_APP_URL=https://your-vercel-domain.vercel.app
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
@@ -37,7 +37,7 @@ cd apps/web
 vercel link
 vercel env add DATABASE_URL production
 vercel env add PARTICIPANT_SESSION_SECRET production
-vercel env add ADMIN_EMAIL production
+vercel env add ADMIN_ID production
 vercel env add ADMIN_PASSWORD production
 vercel env add NEXT_PUBLIC_APP_URL production
 vercel env add NEXT_PUBLIC_SUPABASE_URL production

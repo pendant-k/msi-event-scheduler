@@ -79,12 +79,14 @@ export async function cancelParticipantReservationAction(formData: FormData) {
 }
 
 export async function adminLoginAction(formData: FormData) {
-  const email = formString(formData, "email");
+  const adminId = formString(formData, "adminId") || formString(formData, "email");
   const password = formString(formData, "password");
-  const expectedEmail = process.env.ADMIN_EMAIL ?? "admin@example.com";
+  const expectedAdminIds = [process.env.ADMIN_ID?.trim() || "admin", process.env.ADMIN_EMAIL?.trim()].filter(
+    (value): value is string => Boolean(value)
+  );
   const expectedPassword = process.env.ADMIN_PASSWORD ?? "password";
-  if (email !== expectedEmail || password !== expectedPassword) {
-    throw new DomainError("invalid_credentials", "관리자 이메일 또는 비밀번호가 올바르지 않습니다.");
+  if (!expectedAdminIds.includes(adminId) || password !== expectedPassword) {
+    throw new DomainError("invalid_credentials", "관리자 아이디 또는 비밀번호가 올바르지 않습니다.");
   }
   await setAdminUserId(localAdminUserId);
   redirect("/admin");

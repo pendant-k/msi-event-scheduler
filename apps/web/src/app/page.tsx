@@ -1,7 +1,7 @@
 import { adminLoginAction } from "@/app/actions";
 
 export default function HomePage() {
-  const defaultEmail = process.env.ADMIN_EMAIL ?? "admin@example.com";
+  const defaultAdminId = process.env.ADMIN_ID ?? "admin";
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-3xl items-center">
@@ -15,13 +15,13 @@ export default function HomePage() {
           </div>
           <div className="space-y-3">
             <label className="form-control">
-              <span className="label-text">이메일</span>
+              <span className="label-text">아이디</span>
               <input
-                name="email"
-                type="email"
+                name="adminId"
+                type="text"
                 className="input input-bordered w-full"
-                defaultValue={defaultEmail}
-                autoComplete="email"
+                defaultValue={defaultAdminId}
+                autoComplete="username"
                 required
               />
             </label>
