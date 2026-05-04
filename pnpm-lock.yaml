@@ -26,6 +26,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@libsql/client':
+        specifier: ^0.15.15
+        version: 0.15.15
       '@scheduler/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -50,12 +53,18 @@ importers:
       daisyui:
         specifier: ^4.12.0
         version: 4.12.24(postcss@8.5.12)
+      drizzle-orm:
+        specifier: ^0.44.7
+        version: 0.44.7(@libsql/client@0.15.15)(postgres@3.4.9)
       lucide-react:
         specifier: ^1.14.0
         version: 1.14.0(react@19.2.5)
       next:
         specifier: ^15.5.0
         version: 15.5.15(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      postgres:
+        specifier: ^3.4.9
+        version: 3.4.9
       react:
         specifier: ^19.0.0
         version: 19.2.5
