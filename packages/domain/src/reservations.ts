@@ -45,14 +45,14 @@ export async function createReservation(
     if (new Date() > closeAt || (isLate && !event.allowLateReservation)) {
       throw new DomainError("timeslot_closed", "예약 마감 시간이 지났습니다.");
     }
-    const overCapacity = slot.reservedCount >= slot.capacity;
-    if (overCapacity && !input.allowOverbook) throw new DomainError("capacity_full", "정원이 마감되었습니다.");
+    await tx.execute(sql`select id from ${participantAccesses} where id = ${access.id} for update`);
     const guardianRequired =
       input.grade >= event.minGuardianRequiredGrade && input.grade <= event.maxGuardianRequiredGrade;
     if (guardianRequired && !input.guardianConfirmed) {
       throw new DomainError("guardian_required", "보호자 동행 확인이 필요합니다.");
     }
     if (input.tournament && event.enableTournament) {
+      await tx.execute(sql`select id from ${events} where id = ${event.id} for update`);
       const tournamentCount = await tx
         .select({ value: count() })
         .from(reservations)
@@ -107,6 +107,17 @@ export async function createReservation(
       if (duplicate) throw new DomainError("duplicate_reservation", "이미 예약된 참가자입니다.");
     }
 
+    const slotUpdateConditions = [eq(timeslots.id, slot.id), eq(timeslots.eventId, event.id), eq(timeslots.status, "OPEN")];
+    if (!input.allowOverbook) {
+      slotUpdateConditions.push(sql`${timeslots.reservedCount} < ${timeslots.capacity}`);
+    }
+    const [updatedSlot] = await tx
+      .update(timeslots)
+      .set({ reservedCount: sql`${timeslots.reservedCount} + 1`, updatedAt: timestamp })
+      .where(and(...slotUpdateConditions))
+      .returning({ reservedCount: timeslots.reservedCount, capacity: timeslots.capacity });
+    if (!updatedSlot) throw new DomainError("capacity_full", "정원이 마감되었습니다.");
+
     const reservation = {
       id: id("reservation"),
       eventId: event.id,
@@ -118,7 +129,7 @@ export async function createReservation(
       duplicateKey: dupKey,
       reservationCode: shortCode(8),
       checkInCode: shortCode(10),
-      isOverbooked: Boolean(input.allowOverbook && overCapacity),
+      isOverbooked: Boolean(input.allowOverbook && updatedSlot.reservedCount > updatedSlot.capacity),
       createdAt: timestamp,
       updatedAt: timestamp,
       checkedInAt: null,
@@ -127,10 +138,6 @@ export async function createReservation(
       cancellationReason: null
     };
     await tx.insert(reservations).values(reservation);
-    await tx
-      .update(timeslots)
-      .set({ reservedCount: slot.reservedCount + 1, updatedAt: timestamp })
-      .where(eq(timeslots.id, slot.id));
     return reservation;
   });
 }

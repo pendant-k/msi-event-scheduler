@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import type { EventDay, Timeslot } from "@scheduler/db";
+import { RefreshCw } from "lucide-react";
 import { createReservationAction } from "@/app/actions";
 import { formatTime } from "@/lib/format";
 import { PrivacyNoticeModal } from "./privacy-notice-modal";
@@ -11,7 +13,16 @@ type ParticipantReservationProps = {
   enableTournament: boolean;
   day?: EventDay;
   timeslots: Timeslot[];
+  initialUpdatedAt: string;
 };
+
+type PublicSchedulePayload = {
+  day: EventDay | null;
+  timeslots: Timeslot[];
+  updatedAt: string;
+};
+
+const refetchInterval = 5000;
 
 function getLoadState(slot: Timeslot) {
   if (slot.status !== "OPEN") return "closed";
@@ -30,10 +41,42 @@ function getBookable(slot: Timeslot) {
   return slot.status === "OPEN" && getRemaining(slot) > 0;
 }
 
-export function ParticipantReservation({ eventId, enableTournament, day, timeslots }: ParticipantReservationProps) {
-  const visibleTimeslots = useMemo(() => timeslots.filter((slot) => slot.status !== "HIDDEN"), [timeslots]);
+async function fetchPublicSchedule(eventId: string): Promise<PublicSchedulePayload> {
+  const response = await fetch(`/api/events/${eventId}/schedule`, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("시간표를 불러오지 못했습니다.");
+  }
+  return response.json() as Promise<PublicSchedulePayload>;
+}
+
+function ParticipantReservationInner({ eventId, enableTournament, day, timeslots, initialUpdatedAt }: ParticipantReservationProps) {
+  const initialData = useMemo<PublicSchedulePayload>(
+    () => ({ day: day ?? null, timeslots, updatedAt: initialUpdatedAt }),
+    [day, timeslots, initialUpdatedAt]
+  );
+  const { data, error, isFetching, refetch } = useQuery({
+    queryKey: ["public-schedule", eventId],
+    queryFn: () => fetchPublicSchedule(eventId),
+    initialData,
+    refetchInterval,
+    refetchIntervalInBackground: true
+  });
+  const activeDay = data.day ?? day;
+  const activeTimeslots = data.timeslots;
+  const visibleTimeslots = useMemo(() => activeTimeslots.filter((slot) => slot.status !== "HIDDEN"), [activeTimeslots]);
   const openSlots = useMemo(() => visibleTimeslots.filter(getBookable), [visibleTimeslots]);
   const [selectedTimeslotId, setSelectedTimeslotId] = useState(openSlots[0]?.id ?? "");
+  const lastUpdatedAt = new Date(data.updatedAt).toLocaleTimeString("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+
+  useEffect(() => {
+    if (!openSlots.some((slot) => slot.id === selectedTimeslotId)) {
+      setSelectedTimeslotId(openSlots[0]?.id ?? "");
+    }
+  }, [openSlots, selectedTimeslotId]);
 
   function selectTimeslot(timeslotId: string) {
     setSelectedTimeslotId(timeslotId);
@@ -46,8 +89,21 @@ export function ParticipantReservation({ eventId, enableTournament, day, timeslo
         <section className="schedule-section schedule-participant space-y-3">
           <div>
             <h2 className="text-xl font-semibold">전체 시간표</h2>
-            <p className="text-sm text-base-content/60">{day?.eventDate ?? "날짜 미정"}</p>
+            <p className="text-sm text-base-content/60">{activeDay?.eventDate ?? "날짜 미정"}</p>
           </div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-xs font-semibold text-base-content/45">마지막 확인 {lastUpdatedAt}</div>
+            <button
+              className="btn btn-outline btn-sm gap-2 border-[var(--app-blue)]/25 bg-[var(--app-blue)]/8 text-[var(--app-blue)] hover:border-[var(--app-blue)] hover:bg-[var(--app-blue)] hover:text-white"
+              type="button"
+              disabled={isFetching}
+              onClick={() => void refetch()}
+            >
+              <RefreshCw aria-hidden="true" className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+              {isFetching ? "확인 중" : "새로고침"}
+            </button>
+          </div>
+          {error && <div className="alert alert-warning">시간표를 다시 확인하지 못했습니다.</div>}
 
           <div className="schedule-card-list">
             {visibleTimeslots.map((slot) => {
@@ -191,5 +247,15 @@ export function ParticipantReservation({ eventId, enableTournament, day, timeslo
         </form>
       </aside>
     </>
+  );
+}
+
+export function ParticipantReservation(props: ParticipantReservationProps) {
+  const [queryClient] = useState(() => new QueryClient());
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ParticipantReservationInner {...props} />
+    </QueryClientProvider>
   );
 }

@@ -16,6 +16,7 @@ export default async function EventPage({ params }: { params: Promise<{ eventId:
   const session = await getParticipantSession(db, await getParticipantToken());
   const activeSession = session?.eventId === eventId ? session : null;
   const day = bundle.days[0];
+  const initialUpdatedAt = new Date().toISOString();
 
   if (!activeSession) {
     return (
@@ -84,6 +85,7 @@ export default async function EventPage({ params }: { params: Promise<{ eventId:
         enableTournament={bundle.event.enableTournament}
         day={day}
         timeslots={bundle.timeslots}
+        initialUpdatedAt={initialUpdatedAt}
       />
     </div>
   );

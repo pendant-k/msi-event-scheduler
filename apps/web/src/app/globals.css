@@ -66,7 +66,8 @@
   .admin-sidebar {
     position: sticky;
     top: 1rem;
-    max-height: calc(100vh - 2rem);
+    height: calc(100dvh - 2rem);
+    max-height: calc(100dvh - 2rem);
     overflow: auto;
     border: 1px solid rgba(31, 35, 41, 0.06);
     padding: 0.75rem;
@@ -796,6 +797,7 @@
       bottom: 0.75rem;
       left: 0.75rem;
       width: min(22rem, calc(100vw - 1.5rem));
+      height: auto;
       max-height: none;
       transform: translateX(calc(-100% - 1.5rem));
       transition: transform var(--motion-duration-base) var(--motion-ease-standard);

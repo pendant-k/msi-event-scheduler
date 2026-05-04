@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import type { SchedulerDb } from "@scheduler/db";
 import { eventAdmins, eventDays, events, timeslots } from "@scheduler/db";
 import { assertEventAdmin } from "./admin";
@@ -206,8 +206,12 @@ export async function updateTimeslotSettings(
   if (input.capacity < slot.reservedCount) {
     throw new DomainError("invalid_input", "정원은 현재 예약 수보다 작을 수 없습니다.");
   }
-  await db
+  const [updatedSlot] = await db
     .update(timeslots)
     .set({ capacity: parsePositiveInt(input.capacity, slot.capacity), status: input.status, updatedAt: nowIso() })
-    .where(eq(timeslots.id, input.timeslotId));
+    .where(and(eq(timeslots.id, input.timeslotId), eq(timeslots.eventId, input.eventId), sql`${timeslots.reservedCount} <= ${input.capacity}`))
+    .returning({ id: timeslots.id });
+  if (!updatedSlot) {
+    throw new DomainError("invalid_input", "정원은 현재 예약 수보다 작을 수 없습니다.");
+  }
 }
