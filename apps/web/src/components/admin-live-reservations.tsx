@@ -7,7 +7,7 @@ import { Ban, RefreshCw, RotateCcw, Save, UserCheck, UserX } from "lucide-react"
 import { updateReservationStatusAction } from "@/app/actions";
 import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { formatClockTime, formatDateTime, formatTime } from "@/lib/format";
-import { getReservationStatusLabel, getReservationStatusTone, isActiveReservationStatus } from "@/lib/status-labels";
+import { getReservationStatusLabel, isActiveReservationStatus } from "@/lib/status-labels";
 
 export type AdminReservationRow = {
   id: string;
@@ -77,9 +77,6 @@ export function AdminReservationActionCard({ eventId, row }: { eventId: string; 
       <div className="min-w-0">
         <div className="reservation-action-title">
           <span>{row.participantName}</span>
-          <span className={`status-pill status-pill-${getReservationStatusTone(row.status)}`}>
-            {getReservationStatusLabel(row.status)}
-          </span>
         </div>
         <div className="reservation-action-meta">
           <span>{row.school}</span>
