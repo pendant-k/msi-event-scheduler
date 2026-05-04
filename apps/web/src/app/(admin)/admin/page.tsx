@@ -1,7 +1,16 @@
 import { listAdminEvents } from "@scheduler/domain";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { adminLoginAction } from "@/app/actions";
 import { getAdminUserId } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
+
+const eventStatusLabels = {
+  DRAFT: "작성 중",
+  PUBLISHED: "공개",
+  CLOSED: "마감",
+  ARCHIVED: "보관됨"
+} as const;
 
 export default async function AdminHomePage() {
   const adminUserId = await getAdminUserId();
@@ -34,12 +43,21 @@ export default async function AdminHomePage() {
       <section className="surface-flat p-5">
         <h2 className="text-lg font-semibold">{nextEvent ? "가장 가까운 행사" : "행사 없음"}</h2>
         {nextEvent ? (
-          <div className="mt-3">
-            <div className="text-xl font-bold">{nextEvent.name}</div>
-            <div className="mt-1 text-sm text-base-content/60">
-              {nextEvent.eventDate ?? "날짜 미정"} · {nextEvent.status}
+          <Link
+            href={`/admin/events/${nextEvent.id}`}
+            className="interactive-flat mt-3 flex flex-col gap-4 rounded-lg border border-base-300/70 p-4 focus:outline-none focus:ring-2 focus:ring-primary/30 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div className="min-w-0">
+              <div className="truncate text-xl font-bold">{nextEvent.name}</div>
+              <div className="mt-1 text-sm text-base-content/60">
+                {nextEvent.eventDate ?? "날짜 미정"} · {eventStatusLabels[nextEvent.status]}
+              </div>
             </div>
-          </div>
+            <span className="btn btn-primary btn-sm w-full shrink-0 sm:w-auto">
+              이동
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </span>
+          </Link>
         ) : (
           <p className="mt-2 text-sm text-base-content/60">사이드바에서 새 행사를 생성해 주세요.</p>
         )}
