@@ -1,8 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createDatabase, eventDays, events, initializeDatabase, timeslots, type SchedulerDb } from "@scheduler/db";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { eq, sql } from "drizzle-orm";
 import { createOrLoginParticipantAccess } from "../src/participantAccess";
 import {
   cancelReservation,
@@ -14,7 +12,12 @@ import { DomainError } from "../src/errors";
 
 let db: SchedulerDb;
 let client: ReturnType<typeof createDatabase>["client"];
-let tempDir: string;
+
+const describeWithDb = process.env.TEST_DATABASE_URL ? describe : describe.skip;
+
+async function cleanupBase() {
+  await db.execute(sql`delete from events where id = 'event-test'`);
+}
 
 async function seedBase() {
   const timestamp = new Date().toISOString();
@@ -69,20 +72,20 @@ async function access(phoneNumber = "01012345678") {
 }
 
 beforeEach(async () => {
-  tempDir = mkdtempSync(join(tmpdir(), "scheduler-domain-"));
-  const created = createDatabase(`file:${join(tempDir, "test.db")}`);
+  const created = createDatabase(process.env.TEST_DATABASE_URL);
   db = created.db;
   client = created.client;
-  await initializeDatabase(db);
+  await initializeDatabase();
+  await cleanupBase();
   await seedBase();
 });
 
 afterEach(async () => {
+  await cleanupBase();
   await client.close();
-  rmSync(tempDir, { recursive: true, force: true });
 });
 
-describe("reservation domain", () => {
+describeWithDb("reservation domain", () => {
   it("blocks active duplicate reservations for the same participant identity", async () => {
     const session = await access();
     await createReservation(db, {
@@ -156,7 +159,7 @@ describe("reservation domain", () => {
       actor: { type: "participant", accessId: session.accessId }
     });
 
-    const slot = await db.query.timeslots.findFirst();
+    const slot = await db.query.timeslots.findFirst({ where: eq(timeslots.id, "slot-test") });
     expect(slot?.reservedCount).toBe(0);
   });
 

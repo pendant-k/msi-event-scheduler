@@ -14,7 +14,7 @@ function toIso(value: string) {
 
 async function main() {
   const { db, client } = createDatabase();
-  await initializeDatabase(db);
+  await initializeDatabase();
   const executeRaw = async (statement: string) => {
     const database = db as typeof db & {
       execute?: (query: ReturnType<typeof sql.raw>) => Promise<unknown>;

@@ -11,7 +11,6 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@libsql/client": "^0.15.15",
     "@scheduler/config": "workspace:*",
     "@scheduler/db": "workspace:*",
     "@scheduler/domain": "workspace:*",

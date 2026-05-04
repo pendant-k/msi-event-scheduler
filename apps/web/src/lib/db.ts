@@ -1,12 +1,6 @@
-import { getDatabase, initializeDatabase } from "@scheduler/db";
-
-let initialized = false;
+import { getDatabase } from "@scheduler/db";
 
 export async function getAppDb() {
   const database = getDatabase();
-  if (!initialized && database.dialect === "sqlite") {
-    await initializeDatabase(database.db);
-    initialized = true;
-  }
   return database.db;
 }

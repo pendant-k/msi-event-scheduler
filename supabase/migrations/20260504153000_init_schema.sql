@@ -1,5 +1,5 @@
 -- Supabase Postgres schema for the scheduler app.
--- IDs are text to keep public event slugs such as "msi-2026" compatible with local SQLite.
+-- IDs are text to keep public event slugs such as "msi-2026" stable.
 
 create table if not exists events (
   id text primary key,

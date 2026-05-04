@@ -1,6 +1,6 @@
 # Vercel + Supabase Deployment
 
-This app keeps local development on SQLite/libSQL and switches to Supabase Postgres when `DATABASE_URL` is a `postgres://` or `postgresql://` URL.
+This app uses Supabase Postgres for local development and production. `DATABASE_URL` must be a `postgres://` or `postgresql://` connection string.
 
 ## Supabase
 
@@ -9,7 +9,7 @@ This app keeps local development on SQLite/libSQL and switches to Supabase Postg
 3. Copy the Postgres transaction pooler connection string.
 4. Use that value as `DATABASE_URL` in Vercel.
 
-Use the transaction pooler connection string for Vercel/serverless deployments. The app uses the `postgres` driver with prepared statements disabled for this mode.
+Use the transaction pooler connection string for Vercel/serverless deployments. The app uses the `postgres` driver with prepared statements disabled.
 
 Required production values:
 

@@ -7,8 +7,7 @@ Event booth reservation and check-in prototype based on the PRD in [`prd.md`](./
 - `pnpm` workspace + Turborepo
 - Next.js App Router in `apps/web`
 - Drizzle ORM
-- SQLite for local prototype
-- Supabase Postgres/Auth as production target
+- Supabase Postgres
 - TanStack Table for admin tables
 
 ## Local Setup
@@ -43,6 +42,5 @@ password
 
 Vercel + Supabase setup is documented in [`docs/deployment.md`](./docs/deployment.md).
 
-- Local development uses `DATABASE_URL=file:./data/local.db`.
-- Vercel production should use the Supabase Postgres transaction pooler URL as `DATABASE_URL`.
+- Local development and Vercel production both use the Supabase Postgres transaction pooler URL as `DATABASE_URL`.
 - The Supabase schema lives in [`supabase/schema.sql`](./supabase/schema.sql).

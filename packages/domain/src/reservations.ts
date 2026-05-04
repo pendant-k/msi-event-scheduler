@@ -211,7 +211,7 @@ export async function cancelReservation(
         targetType: "reservation",
         targetId: reservation.id,
         reason: input.reason ?? null,
-        metadata: "{}",
+        metadata: {},
         createdAt: timestamp
       });
     }
@@ -244,7 +244,7 @@ export async function checkInReservation(
     targetType: "reservation",
     targetId: reservation.id,
     reason: null,
-    metadata: "{}",
+    metadata: {},
     createdAt: timestamp
   });
   return { ...reservation, status: "CHECKED_IN" as const };
@@ -274,7 +274,7 @@ export async function markNoShowReservation(
     targetType: "reservation",
     targetId: reservation.id,
     reason: null,
-    metadata: "{}",
+    metadata: {},
     createdAt: timestamp
   });
   return { ...reservation, status: "NO_SHOW" as const };

@@ -48,7 +48,7 @@ export async function manualOverbookReservation(
     targetType: "reservation",
     targetId: reservation.id,
     reason: input.reason,
-    metadata: "{}",
+    metadata: {},
     createdAt: nowIso()
   });
   return { ...reservation, isOverbooked: true };
