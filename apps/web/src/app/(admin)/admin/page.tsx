@@ -36,12 +36,12 @@ export default async function AdminHomePage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">관리자 대시보드</h1>
-          <p className="text-sm text-base-content/60">왼쪽 사이드바에서 날짜순으로 행사를 선택합니다.</p>
+          <p className="text-sm text-base-content/60">왼쪽 사이드바에서 최신순으로 행사를 선택합니다.</p>
         </div>
       </div>
 
       <section className="surface-flat p-5">
-        <h2 className="text-lg font-semibold">{nextEvent ? "가장 가까운 행사" : "행사 없음"}</h2>
+        <h2 className="text-lg font-semibold">{nextEvent ? "최신 행사" : "행사 없음"}</h2>
         {nextEvent ? (
           <Link
             href={`/admin/events/${nextEvent.id}`}
