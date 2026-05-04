@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useFormStatus } from "react-dom";
 import { AlertTriangle, Check, GitBranch, LoaderCircle, Play, RotateCcw, Shuffle, UserCheck, UserPlus, UserX, ZoomIn, ZoomOut } from "lucide-react";
@@ -196,6 +196,10 @@ function pointerDistance(left: { x: number; y: number }, right: { x: number; y: 
   return Math.hypot(left.x - right.x, left.y - right.y);
 }
 
+function getSuggestedBracketSize(participantCount: number) {
+  return bracketSizes.find((size) => participantCount <= size) ?? bracketSizes[bracketSizes.length - 1]!;
+}
+
 export function TournamentManagement({ eventId, tournamentCapacity, applicants, tournament, entrants, matches }: TournamentManagementProps) {
   const [query, setQuery] = useState("");
   const [picker, setPicker] = useState<PickerState | null>(null);
@@ -215,6 +219,11 @@ export function TournamentManagement({ eventId, tournamentCapacity, applicants, 
     startZoom: number;
   } | null>(null);
   const checkedInApplicants = applicants.filter((applicant) => applicant.tournamentCheckedIn);
+  const suggestedBracketSize = getSuggestedBracketSize(checkedInApplicants.length);
+  const [selectedBracketSize, setSelectedBracketSize] = useState(suggestedBracketSize);
+  useEffect(() => {
+    setSelectedBracketSize(suggestedBracketSize);
+  }, [suggestedBracketSize]);
   const filteredApplicants = applicants.filter((applicant) => {
     const target = `${applicant.participantName} ${applicant.school} ${applicant.maskedPhone} ${applicant.reservationCode}`.toLowerCase();
     return target.includes(query.trim().toLowerCase());
@@ -315,11 +324,17 @@ export function TournamentManagement({ eventId, tournamentCapacity, applicants, 
       <input type="hidden" name="eventId" value={eventId} />
       <label className="form-control">
         <span className="label-text">대진 규모</span>
-        <select name="bracketSize" className="select select-bordered" defaultValue={tournament?.bracketSize ?? 32}>
+        <select
+          name="bracketSize"
+          className="select select-bordered"
+          value={selectedBracketSize}
+          onChange={(event) => setSelectedBracketSize(Number(event.target.value))}
+        >
           {bracketSizes.map((size) => (
             <option key={size} value={size}>{size}강</option>
           ))}
         </select>
+        <span className="mt-1 text-xs font-semibold text-base-content/50">체크인 {checkedInApplicants.length}명 기준 자동 선택</span>
       </label>
       <label className="form-control">
         <span className="label-text">배치 방식</span>
