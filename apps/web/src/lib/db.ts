@@ -4,7 +4,7 @@ let initialized = false;
 
 export async function getAppDb() {
   const database = getDatabase();
-  if (!initialized) {
+  if (!initialized && database.dialect === "sqlite") {
     await initializeDatabase(database.db);
     initialized = true;
   }
