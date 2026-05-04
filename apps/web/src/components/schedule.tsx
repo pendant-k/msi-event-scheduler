@@ -197,18 +197,19 @@ export function Schedule({
       )}
 
       {mode === "admin" ? (
-        <div className="timetable-wrap surface-flat overflow-x-auto">
-          {adminTimetable.rows.length === 0 ? (
-            <div className="timetable-empty">표시할 타임라인이 없습니다.</div>
-          ) : (
-            <div
-              className="timetable"
-              style={
-                {
-                  gridTemplateRows: `2.75rem repeat(${adminTimetable.rows.length}, 3.25rem)`
-                } satisfies CSSProperties
-              }
-            >
+        <>
+          <div className="timetable-wrap surface-flat overflow-x-auto">
+            {adminTimetable.rows.length === 0 ? (
+              <div className="timetable-empty">표시할 타임라인이 없습니다.</div>
+            ) : (
+              <div
+                className="timetable"
+                style={
+                  {
+                    gridTemplateRows: `2.75rem repeat(${adminTimetable.rows.length}, 3.25rem)`
+                  } satisfies CSSProperties
+                }
+              >
               <div className="timetable-corner">시간</div>
               <div className="timetable-lanes-head">일정</div>
               <div
@@ -288,8 +289,9 @@ export function Schedule({
                   );
                 })}
               </div>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
           {selectedSlot && selectedLoadState && (
             <div className="modal modal-open" role="dialog" aria-modal="true" aria-labelledby="timeslot-detail-title">
               <div className="modal-box max-w-3xl p-0">
@@ -471,7 +473,7 @@ export function Schedule({
               </button>
             </div>
           )}
-        </div>
+        </>
       ) : (
         <div className="schedule-table-wrap surface-flat overflow-x-auto">
           <table className="schedule-table min-w-[640px] w-full text-sm">
