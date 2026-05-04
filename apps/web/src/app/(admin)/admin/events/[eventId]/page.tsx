@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getSchedule, searchCheckInRows } from "@scheduler/domain";
-import { ArrowRight, BadgeCheck, Clock3, ClipboardList, Download, LayoutDashboard } from "lucide-react";
+import { ArrowRight, Clock3, ClipboardList, Download, LayoutDashboard } from "lucide-react";
 import { Schedule } from "@/components/schedule";
 import { getAdminUserId } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
@@ -18,20 +18,12 @@ export default async function AdminEventPage({ params }: { params: Promise<{ eve
   const activeCount = rows.filter((row) => row.status === "RESERVED" || row.status === "LATE_RESERVED").length;
   const adminActions = [
     {
-      href: `/admin/events/${eventId}/check-in`,
-      title: "체크인 대시보드",
-      description: "전화번호 뒷자리, 이름, 학교, 예약번호로 현장 참가자를 찾습니다.",
-      Icon: BadgeCheck,
+      href: `/admin/events/${eventId}/reservations`,
+      title: "예약/체크인 관리",
+      description: "예약 검색, 현장 체크인, 취소/노쇼, 수동 예약을 한 화면에서 처리합니다.",
+      Icon: ClipboardList,
       iconClass: "bg-emerald-50 text-emerald-700",
       buttonClass: "bg-emerald-600 text-white hover:bg-emerald-700"
-    },
-    {
-      href: `/admin/events/${eventId}/reservations`,
-      title: "예약 관리",
-      description: "예약 테이블, 수동 예약 추가, 취소/노쇼 처리를 관리합니다.",
-      Icon: ClipboardList,
-      iconClass: "bg-sky-50 text-sky-700",
-      buttonClass: "bg-sky-600 text-white hover:bg-sky-700"
     },
     {
       href: `/admin/events/${eventId}/schedule`,

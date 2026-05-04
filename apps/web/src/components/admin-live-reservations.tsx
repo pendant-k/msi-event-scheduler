@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-quer
 import { DataTable } from "@scheduler/ui/data-table";
 import { Ban, RefreshCw, UserX } from "lucide-react";
 import { cancelAdminReservationAction, checkInAction, markNoShowAction } from "@/app/actions";
-import { formatClockTime, formatDateTime } from "@/lib/format";
+import { formatClockTime, formatDateTime, formatTime } from "@/lib/format";
 import { getReservationStatusLabel, getReservationStatusTone, isActiveReservationStatus } from "@/lib/status-labels";
 
 export type AdminReservationRow = {
@@ -17,6 +17,7 @@ export type AdminReservationRow = {
   school: string;
   grade: number;
   phoneNumber: string;
+  timeslotTitle: string | null;
   startsAt: string;
   endsAt: string;
   timeslotId: string;
@@ -31,7 +32,6 @@ type AdminLiveReservationsProps = {
   eventId: string;
   initialRows: AdminReservationRow[];
   initialUpdatedAt: string;
-  mode: "reservations" | "check-in";
   query?: string;
 };
 
@@ -64,7 +64,63 @@ function RefreshButton({ isFetching, onRefresh }: { isFetching: boolean; onRefre
   );
 }
 
-function AdminLiveReservationsInner({ eventId, initialRows, initialUpdatedAt, mode, query }: AdminLiveReservationsProps) {
+function getTimeslotLabel(row: Pick<AdminReservationRow, "timeslotTitle" | "startsAt" | "endsAt">) {
+  const time = `${formatDateTime(row.startsAt)} - ${formatTime(row.endsAt)}`;
+  return row.timeslotTitle ? `${row.timeslotTitle} · ${time}` : time;
+}
+
+export function AdminReservationActionCard({ eventId, row }: { eventId: string; row: AdminReservationRow }) {
+  const active = isActiveReservationStatus(row.status);
+
+  return (
+    <div className="reservation-action-card">
+      <div className="min-w-0">
+        <div className="reservation-action-title">
+          <span>{row.participantName}</span>
+          <span className={`status-pill status-pill-${getReservationStatusTone(row.status)}`}>
+            {getReservationStatusLabel(row.status)}
+          </span>
+        </div>
+        <div className="reservation-action-meta">
+          <span>{row.school}</span>
+          <span>{row.grade}학년</span>
+          <span>{getTimeslotLabel(row)}</span>
+          <span>{row.phoneNumber}</span>
+          <span>{row.reservationCode}</span>
+        </div>
+      </div>
+
+      <div className="reservation-action-buttons">
+        <form action={checkInAction}>
+          <input type="hidden" name="eventId" value={eventId} />
+          <input type="hidden" name="reservationId" value={row.id} />
+          <button className="btn btn-primary btn-sm" type="submit" disabled={row.status === "CHECKED_IN" || !active}>
+            체크인
+          </button>
+        </form>
+        <form action={markNoShowAction}>
+          <input type="hidden" name="eventId" value={eventId} />
+          <input type="hidden" name="reservationId" value={row.id} />
+          <button className="btn btn-no-show btn-sm" type="submit" disabled={!active}>
+            <UserX aria-hidden="true" className="h-4 w-4" />
+            노쇼
+          </button>
+        </form>
+        <form action={cancelAdminReservationAction}>
+          <input type="hidden" name="eventId" value={eventId} />
+          <input type="hidden" name="reservationId" value={row.id} />
+          <input type="hidden" name="reason" value="admin_cancel" />
+          <button className="btn btn-cancel-reservation btn-sm" type="submit" disabled={!active}>
+            <Ban aria-hidden="true" className="h-4 w-4" />
+            취소
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AdminLiveReservationsInner({ eventId, initialRows, initialUpdatedAt, query }: AdminLiveReservationsProps) {
   const initialData = useMemo<AdminReservationsPayload>(
     () => ({ rows: initialRows, updatedAt: initialUpdatedAt }),
     [initialRows, initialUpdatedAt]
@@ -78,9 +134,11 @@ function AdminLiveReservationsInner({ eventId, initialRows, initialUpdatedAt, mo
   });
   const rows = data.rows;
   const lastUpdatedAt = formatClockTime(data.updatedAt);
+  const activeCount = rows.filter((row) => isActiveReservationStatus(row.status)).length;
+  const checkedInCount = rows.filter((row) => row.status === "CHECKED_IN").length;
 
   const tableRows = rows.map((row) => ({
-    time: formatDateTime(row.startsAt),
+    time: getTimeslotLabel(row),
     name: row.participantName,
     school: row.school,
     grade: `${row.grade}`,
@@ -89,55 +147,22 @@ function AdminLiveReservationsInner({ eventId, initialRows, initialUpdatedAt, mo
     tournament: row.tournament ? "신청" : "-"
   }));
 
-  if (mode === "check-in") {
-    return (
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="text-xs font-semibold text-base-content/45">마지막 확인 {lastUpdatedAt}</div>
-          <RefreshButton isFetching={isFetching} onRefresh={() => void refetch()} />
-        </div>
-        {error && <div className="alert alert-warning">예약 정보를 다시 확인하지 못했습니다.</div>}
-        <div className="grid gap-2">
-          {rows.map((row) => (
-            <div key={row.id} className="surface-flat flex flex-wrap items-center justify-between gap-3 p-3">
-              <div>
-                <div className="font-medium">
-                  {row.participantName} · {row.school} · {row.grade}학년
-                </div>
-                <div className="text-sm text-base-content/60">
-                  {formatDateTime(row.startsAt)} · {row.phoneNumber} · {row.reservationCode}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={`status-pill status-pill-${getReservationStatusTone(row.status)}`}>
-                  {getReservationStatusLabel(row.status)}
-                </span>
-                <form action={checkInAction}>
-                  <input type="hidden" name="eventId" value={eventId} />
-                  <input type="hidden" name="reservationId" value={row.id} />
-                  <button className="btn btn-primary btn-sm" type="submit" disabled={row.status === "CHECKED_IN"}>
-                    체크인
-                  </button>
-                </form>
-              </div>
-            </div>
-          ))}
-          {rows.length === 0 && <div className="alert">검색 결과가 없습니다.</div>}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-2 text-sm font-semibold text-base-content/60">
+          <span>전체 {rows.length}건</span>
+          <span>활성 {activeCount}건</span>
+          <span>체크인 {checkedInCount}건</span>
+          <span className="text-xs text-base-content/45">마지막 확인 {lastUpdatedAt}</span>
+        </div>
         <RefreshButton isFetching={isFetching} onRefresh={() => void refetch()} />
       </div>
       {error && <div className="alert alert-warning">예약 정보를 다시 확인하지 못했습니다.</div>}
       <section className="surface-flat p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold">예약 테이블</h2>
-          <div className="text-xs font-semibold text-base-content/45">마지막 확인 {lastUpdatedAt}</div>
+          <div className="text-xs font-semibold text-base-content/45">검색 결과 {rows.length}건</div>
         </div>
         <DataTable
           rows={tableRows}
@@ -155,54 +180,13 @@ function AdminLiveReservationsInner({ eventId, initialRows, initialUpdatedAt, mo
 
       <section className="surface-flat p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold">취소/노쇼 처리</h2>
-          <div className="text-sm font-semibold text-base-content/55">
-            활성 예약 {rows.filter((row) => isActiveReservationStatus(row.status)).length}건
-          </div>
+          <h2 className="text-lg font-semibold">체크인/예약 처리</h2>
+          <div className="text-sm font-semibold text-base-content/55">활성 예약 {activeCount}건</div>
         </div>
         <div className="reservation-action-list">
-          {rows.map((row) => {
-            const active = isActiveReservationStatus(row.status);
-            return (
-              <div key={row.id} className="reservation-action-card">
-                <div className="min-w-0">
-                  <div className="reservation-action-title">
-                    <span>{row.participantName}</span>
-                    <span className={`status-pill status-pill-${getReservationStatusTone(row.status)}`}>
-                      {getReservationStatusLabel(row.status)}
-                    </span>
-                  </div>
-                  <div className="reservation-action-meta">
-                    <span>{row.school}</span>
-                    <span>{row.grade}학년</span>
-                    <span>{formatDateTime(row.startsAt)}</span>
-                    <span>{row.phoneNumber}</span>
-                    <span>{row.reservationCode}</span>
-                  </div>
-                </div>
-
-                <div className="reservation-action-buttons">
-                  <form action={markNoShowAction}>
-                    <input type="hidden" name="eventId" value={eventId} />
-                    <input type="hidden" name="reservationId" value={row.id} />
-                    <button className="btn btn-no-show btn-sm" type="submit" disabled={!active}>
-                      <UserX aria-hidden="true" className="h-4 w-4" />
-                      노쇼 처리
-                    </button>
-                  </form>
-                  <form action={cancelAdminReservationAction}>
-                    <input type="hidden" name="eventId" value={eventId} />
-                    <input type="hidden" name="reservationId" value={row.id} />
-                    <input type="hidden" name="reason" value="admin_cancel" />
-                    <button className="btn btn-cancel-reservation btn-sm" type="submit" disabled={!active}>
-                      <Ban aria-hidden="true" className="h-4 w-4" />
-                      예약 취소
-                    </button>
-                  </form>
-                </div>
-              </div>
-            );
-          })}
+          {rows.map((row) => (
+            <AdminReservationActionCard key={row.id} eventId={eventId} row={row} />
+          ))}
           {rows.length === 0 && <div className="alert">예약 내역이 없습니다.</div>}
         </div>
       </section>

@@ -14,7 +14,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ even
   const { eventId } = await params;
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q") ?? undefined;
-  const rows = await searchCheckInRows(await getAppDb(), { eventId, query });
+  const timeslotId = searchParams.get("timeslotId") ?? undefined;
+  const rows = await searchCheckInRows(await getAppDb(), { eventId, query, timeslotId });
 
   return NextResponse.json({
     rows,
