@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowLeft, EyeOff, Save, Trash2 } from "lucide-react";
 import { getSchedule } from "@scheduler/domain";
 import { deleteTimeslotAction, updateTimeslotsAction } from "@/app/actions";
-import { AdminRefreshButton } from "@/components/admin-refresh-button";
 import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { Schedule } from "@/components/schedule";
 import { ScheduleEditorModals } from "@/components/schedule-editor-modals";
@@ -28,18 +27,15 @@ export default async function AdminSchedulePage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Link href={`/admin/events/${eventId}`} className="btn btn-ghost btn-sm">
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            운영 허브
-          </Link>
-          <h1 className="mt-3 text-2xl font-bold">시간표 관리</h1>
-          <p className="text-sm text-base-content/60">
-            {schedule.event.name} · 숨김 {hiddenCount}개
-          </p>
-        </div>
-        <AdminRefreshButton label="시간표 새로고침" />
+      <div>
+        <Link href={`/admin/events/${eventId}`} className="btn btn-ghost btn-sm">
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          운영 허브
+        </Link>
+        <h1 className="mt-3 text-2xl font-bold">시간표 관리</h1>
+        <p className="text-sm text-base-content/60">
+          {schedule.event.name} · 숨김 {hiddenCount}개
+        </p>
       </div>
 
       <Schedule event={schedule.event} day={schedule.selectedDay} timeslots={schedule.timeslots} mode="admin" />

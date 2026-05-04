@@ -2,10 +2,13 @@
 
 import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
-import { Clock, Hash, Loader2, Users, X } from "lucide-react";
+import { Clock, Hash, Loader2, Save, Trash2, Users, X } from "lucide-react";
 import type { Event, EventDay, Timeslot } from "@scheduler/db";
+import { deleteTimeslotAction, updateTimeslotAction } from "@/app/actions";
+import { AdminRefreshButton } from "@/components/admin-refresh-button";
 import type { AdminReservationRow } from "@/components/admin-live-reservations";
 import { AdminReservationActionCard } from "@/components/admin-live-reservations";
+import { PendingSubmitButton } from "@/components/loading-modal";
 import { formatTime } from "@/lib/format";
 
 function getLoadState(slot: Timeslot) {
@@ -123,7 +126,7 @@ export function Schedule({
   const visibleTimeslots = mode === "participant" ? timeslots.filter((slot) => slot.status !== "HIDDEN") : timeslots;
   const adminTimetable = mode === "admin" ? getAdminTimetable(day, visibleTimeslots) : { rows: [], blocks: [], laneCount: 1, ticks: [] };
   const [selectedSlot, setSelectedSlot] = useState<Timeslot | null>(null);
-  const [detailTab, setDetailTab] = useState<"overview" | "reservations">("overview");
+  const [detailTab, setDetailTab] = useState<"overview" | "settings" | "reservations">("overview");
   const [slotRows, setSlotRows] = useState<AdminReservationRow[]>([]);
   const [slotRowsLoading, setSlotRowsLoading] = useState(false);
   const [slotRowsError, setSlotRowsError] = useState(false);
@@ -156,9 +159,12 @@ export function Schedule({
 
   return (
     <section className={`schedule-section schedule-${mode} space-y-3`}>
-      <div>
-        <h2 className="text-xl font-semibold">전체 시간표</h2>
-        <p className="text-sm text-base-content/60">{day?.eventDate ?? "날짜 미정"}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-semibold">전체 시간표</h2>
+          <p className="text-sm text-base-content/60">{day?.eventDate ?? "날짜 미정"}</p>
+        </div>
+        {mode === "admin" && <AdminRefreshButton label="시간표 새로고침" />}
       </div>
 
       {mode === "participant" && (
@@ -315,6 +321,15 @@ export function Schedule({
                     <button
                       type="button"
                       role="tab"
+                      aria-selected={detailTab === "settings"}
+                      data-active={detailTab === "settings" ? "true" : undefined}
+                      onClick={() => setDetailTab("settings")}
+                    >
+                      설정
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
                       aria-selected={detailTab === "reservations"}
                       data-active={detailTab === "reservations" ? "true" : undefined}
                       onClick={() => setDetailTab("reservations")}
@@ -371,6 +386,65 @@ export function Schedule({
                         </div>
                       </div>
                     </>
+                  ) : detailTab === "settings" ? (
+                    <div className="timeslot-settings-panel">
+                      <form action={updateTimeslotAction} className="timeslot-settings-form">
+                        <input type="hidden" name="eventId" value={event.id} />
+                        <input type="hidden" name="timeslotId" value={selectedSlot.id} />
+                        <label className="form-control">
+                          <span className="label-text">일정 이름</span>
+                          <input
+                            name="title"
+                            className="input input-bordered"
+                            defaultValue={selectedSlot.title ?? ""}
+                            placeholder="예: 오전 체험"
+                          />
+                        </label>
+                        <label className="form-control">
+                          <span className="label-text">정원</span>
+                          <input
+                            name="capacity"
+                            type="number"
+                            min={selectedSlot.reservedCount}
+                            className="input input-bordered"
+                            defaultValue={selectedSlot.capacity}
+                            required
+                          />
+                        </label>
+                        <label className="form-control">
+                          <span className="label-text">공개 상태</span>
+                          <select name="status" className="select select-bordered" defaultValue={selectedSlot.status}>
+                            <option value="OPEN">예약 가능</option>
+                            <option value="CLOSED">마감</option>
+                            <option value="HIDDEN">숨김</option>
+                          </select>
+                        </label>
+                        <div className="timeslot-settings-actions">
+                          <PendingSubmitButton className="btn btn-primary gap-2" pendingChildren="저장 중">
+                            <Save className="size-4" aria-hidden="true" />
+                            설정 저장
+                          </PendingSubmitButton>
+                        </div>
+                      </form>
+                      <form action={deleteTimeslotAction} className="timeslot-delete-form">
+                        <input type="hidden" name="eventId" value={event.id} />
+                        <input type="hidden" name="timeslotId" value={selectedSlot.id} />
+                        <div className="min-w-0">
+                          <div className="text-sm font-black">일정 삭제</div>
+                          <div className="mt-1 text-xs font-semibold text-base-content/55">
+                            예약 이력이 있는 일정은 삭제할 수 없습니다. 운영에서 제외하려면 숨김으로 저장하세요.
+                          </div>
+                        </div>
+                        <button
+                          className="btn btn-error btn-outline btn-sm gap-2"
+                          type="submit"
+                          disabled={selectedSlot.reservedCount > 0}
+                        >
+                          <Trash2 className="size-4" aria-hidden="true" />
+                          삭제
+                        </button>
+                      </form>
+                    </div>
                   ) : (
                     <div className="timeslot-reservation-panel">
                       {slotRowsLoading && (
