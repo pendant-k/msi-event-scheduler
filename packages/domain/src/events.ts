@@ -133,6 +133,7 @@ export async function createManagedEvent(
         id: id("slot"),
         eventId,
         eventDayId,
+        title: null,
         startsAt: new Date(cursor).toISOString(),
         endsAt: new Date(slotEnd).toISOString(),
         capacity,
@@ -169,7 +170,7 @@ export async function createEventDay(
 
 export async function createTimeslot(
   db: SchedulerDb,
-  input: { adminUserId: string; eventId: string; eventDayId: string; startsAt: string; endsAt: string; capacity: number }
+  input: { adminUserId: string; eventId: string; eventDayId: string; title?: string; startsAt: string; endsAt: string; capacity: number }
 ) {
   await assertEventAdmin(db, input.eventId, input.adminUserId);
   const day = await db.query.eventDays.findFirst({ where: and(eq(eventDays.id, input.eventDayId), eq(eventDays.eventId, input.eventId)) });
@@ -184,6 +185,7 @@ export async function createTimeslot(
     id: id("slot"),
     eventId: input.eventId,
     eventDayId: input.eventDayId,
+    title: input.title?.trim() || null,
     startsAt: start.toISOString(),
     endsAt: end.toISOString(),
     capacity: parsePositiveInt(input.capacity, 20),
@@ -198,7 +200,14 @@ export async function createTimeslot(
 
 export async function updateTimeslotSettings(
   db: SchedulerDb,
-  input: { adminUserId: string; eventId: string; timeslotId: string; capacity: number; status: "OPEN" | "CLOSED" | "HIDDEN" }
+  input: {
+    adminUserId: string;
+    eventId: string;
+    timeslotId: string;
+    title?: string;
+    capacity: number;
+    status: "OPEN" | "CLOSED" | "HIDDEN";
+  }
 ) {
   await assertEventAdmin(db, input.eventId, input.adminUserId);
   const slot = await db.query.timeslots.findFirst({ where: and(eq(timeslots.id, input.timeslotId), eq(timeslots.eventId, input.eventId)) });
@@ -208,7 +217,12 @@ export async function updateTimeslotSettings(
   }
   const [updatedSlot] = await db
     .update(timeslots)
-    .set({ capacity: parsePositiveInt(input.capacity, slot.capacity), status: input.status, updatedAt: nowIso() })
+    .set({
+      title: input.title?.trim() || null,
+      capacity: parsePositiveInt(input.capacity, slot.capacity),
+      status: input.status,
+      updatedAt: nowIso()
+    })
     .where(and(eq(timeslots.id, input.timeslotId), eq(timeslots.eventId, input.eventId), sql`${timeslots.reservedCount} <= ${input.capacity}`))
     .returning({ id: timeslots.id });
   if (!updatedSlot) {

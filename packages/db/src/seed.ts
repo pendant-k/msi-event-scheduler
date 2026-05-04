@@ -98,14 +98,14 @@ async function main() {
     .onConflictDoNothing();
 
   const slotSeeds = [
-    { start: "2026-05-05T09:30:00+09:00", end: "2026-05-05T11:00:00+09:00", capacity: 12, status: "OPEN" },
-    { start: "2026-05-05T11:00:00+09:00", end: "2026-05-05T12:00:00+09:00", capacity: 16, status: "OPEN" },
-    { start: "2026-05-05T13:00:00+09:00", end: "2026-05-05T14:00:00+09:00", capacity: 16, status: "OPEN" },
-    { start: "2026-05-05T14:00:00+09:00", end: "2026-05-05T15:00:00+09:00", capacity: 16, status: "OPEN" },
-    { start: "2026-05-05T15:00:00+09:00", end: "2026-05-05T16:00:00+09:00", capacity: 16, status: "OPEN" },
-    { start: "2026-05-05T10:00:00+09:00", end: "2026-05-05T11:00:00+09:00", capacity: 16, status: "HIDDEN" },
-    { start: "2026-05-05T12:00:00+09:00", end: "2026-05-05T13:00:00+09:00", capacity: 16, status: "HIDDEN" },
-    { start: "2026-05-05T16:00:00+09:00", end: "2026-05-05T17:00:00+09:00", capacity: 16, status: "CLOSED" }
+    { title: "오전 타임어택", start: "2026-05-05T09:30:00+09:00", end: "2026-05-05T11:00:00+09:00", capacity: 12, status: "OPEN" },
+    { title: "튜닝 체험 A", start: "2026-05-05T11:00:00+09:00", end: "2026-05-05T12:00:00+09:00", capacity: 16, status: "OPEN" },
+    { title: "오후 타임어택", start: "2026-05-05T13:00:00+09:00", end: "2026-05-05T14:00:00+09:00", capacity: 16, status: "OPEN" },
+    { title: "튜닝 체험 B", start: "2026-05-05T14:00:00+09:00", end: "2026-05-05T15:00:00+09:00", capacity: 16, status: "OPEN" },
+    { title: "결승 레이스", start: "2026-05-05T15:00:00+09:00", end: "2026-05-05T16:00:00+09:00", capacity: 16, status: "OPEN" },
+    { title: "운영 리허설", start: "2026-05-05T10:00:00+09:00", end: "2026-05-05T11:00:00+09:00", capacity: 16, status: "HIDDEN" },
+    { title: "점심 정비", start: "2026-05-05T12:00:00+09:00", end: "2026-05-05T13:00:00+09:00", capacity: 16, status: "HIDDEN" },
+    { title: "마감 정리", start: "2026-05-05T16:00:00+09:00", end: "2026-05-05T17:00:00+09:00", capacity: 16, status: "CLOSED" }
   ] as const;
   for (const [index, slotSeed] of slotSeeds.entries()) {
     const startDate = new Date(slotSeed.start);
@@ -116,6 +116,7 @@ async function main() {
         id: `msi-2026-slot-${index + 1}`,
         eventId,
         eventDayId,
+        title: slotSeed.title,
         startsAt: startDate.toISOString(),
         endsAt: endDate.toISOString(),
         capacity: slotSeed.capacity,
@@ -128,6 +129,7 @@ async function main() {
         target: timeslots.id,
         set: {
           eventDayId,
+          title: slotSeed.title,
           startsAt: startDate.toISOString(),
           endsAt: endDate.toISOString(),
           capacity: slotSeed.capacity,

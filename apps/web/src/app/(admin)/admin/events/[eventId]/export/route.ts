@@ -21,6 +21,7 @@ type ExportSlot = {
   eventName: string;
   eventDate: string;
   dayLabel: string | null;
+  title: string | null;
   startsAt: string;
   endsAt: string;
   status: string;
@@ -77,6 +78,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ eventId: s
       eventDate: eventDays.eventDate,
       dayLabel: eventDays.label,
       timeslotId: timeslots.id,
+      timeslotTitle: timeslots.title,
       startsAt: timeslots.startsAt,
       endsAt: timeslots.endsAt,
       slotStatus: timeslots.status,
@@ -106,6 +108,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ eventId: s
       eventName: row.eventName,
       eventDate: row.dayLabel ? `${row.eventDate} (${row.dayLabel})` : row.eventDate,
       dayLabel: row.dayLabel,
+      title: row.timeslotTitle,
       startsAt: row.startsAt,
       endsAt: row.endsAt,
       status: row.slotStatus,
@@ -132,6 +135,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ eventId: s
   const header = [
     "행사명",
     "행사일",
+    "일정명",
     "행사시간",
     "일정상태",
     "일정정원",
@@ -159,6 +163,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ eventId: s
     return csvRow([
       slot.eventName,
       slot.eventDate,
+      slot.title ?? "",
       `${formatTime(slot.startsAt)} ~ ${formatTime(slot.endsAt)}`,
       slotStatusLabel(slot.status),
       slot.capacity,

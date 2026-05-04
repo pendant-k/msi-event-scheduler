@@ -42,6 +42,14 @@ function getBookable(slot: Timeslot) {
   return slot.status === "OPEN" && getRemaining(slot) > 0;
 }
 
+function getSlotTitle(slot: Timeslot) {
+  return slot.title?.trim() || `${formatTime(slot.startsAt)} - ${formatTime(slot.endsAt)}`;
+}
+
+function getSlotTime(slot: Timeslot) {
+  return `${formatTime(slot.startsAt)} - ${formatTime(slot.endsAt)}`;
+}
+
 async function fetchPublicSchedule(eventId: string): Promise<PublicSchedulePayload> {
   const response = await fetch(`/api/events/${eventId}/schedule`, { cache: "no-store" });
   if (!response.ok) {
@@ -115,11 +123,9 @@ function ParticipantReservationInner({ eventId, enableTournament, day, timeslots
                   data-selected={selected ? "true" : undefined}
                 >
                   <div className="min-w-0">
-                    <div className="schedule-slot-time">
-                      {formatTime(slot.startsAt)} - {formatTime(slot.endsAt)}
-                    </div>
+                    <div className="schedule-slot-time">{getSlotTitle(slot)}</div>
                     <div className="schedule-slot-meta">
-                      예약 {slot.reservedCount}/{slot.capacity} · 잔여 {remaining}석
+                      {slot.title ? `${getSlotTime(slot)} · ` : ""}예약 {slot.reservedCount}/{slot.capacity} · 잔여 {remaining}석
                     </div>
                   </div>
                   {bookable ? (
@@ -156,7 +162,14 @@ function ParticipantReservationInner({ eventId, enableTournament, day, timeslots
                   return (
                     <tr key={slot.id} data-selected={selected ? "true" : undefined}>
                       <td className="font-medium">
-                        {formatTime(slot.startsAt)} - {formatTime(slot.endsAt)}
+                        {slot.title ? (
+                          <>
+                            <span className="block">{slot.title}</span>
+                            <span className="text-xs font-semibold text-base-content/50">{getSlotTime(slot)}</span>
+                          </>
+                        ) : (
+                          getSlotTime(slot)
+                        )}
                       </td>
                       <td className={`schedule-load-cell schedule-load-${loadState}`}>
                         {slot.reservedCount} / {slot.capacity}
@@ -198,7 +211,8 @@ function ParticipantReservationInner({ eventId, enableTournament, day, timeslots
             >
               {openSlots.map((slot) => (
                 <option key={slot.id} value={slot.id}>
-                  {formatTime(slot.startsAt)} - {formatTime(slot.endsAt)} · 잔여 {getRemaining(slot)}석
+                  {slot.title ? `${slot.title} · ` : ""}
+                  {getSlotTime(slot)} · 잔여 {getRemaining(slot)}석
                 </option>
               ))}
             </select>

@@ -150,6 +150,10 @@ export function ScheduleEditorModals({ eventId, days, defaultCapacity }: Schedul
                 ))}
               </select>
             </label>
+            <label className="form-control">
+              <span className="label-text">일정 이름</span>
+              <input name="title" className="input input-bordered" placeholder="예: 오전 체험, 결승 레이스" />
+            </label>
             <div className="grid gap-2 sm:grid-cols-2">
               <KoreanTimeInput name="startsAt" label="시작" required />
               <KoreanTimeInput name="endsAt" label="종료" required />

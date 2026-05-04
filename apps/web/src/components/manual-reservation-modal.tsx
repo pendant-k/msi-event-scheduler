@@ -9,6 +9,7 @@ const MODAL_EXIT_MS = 180;
 
 type ManualReservationSlot = {
   id: string;
+  title: string | null;
   startsAt: string;
   reservedCount: number;
   capacity: number;
@@ -81,6 +82,7 @@ export function ManualReservationModal({ eventId, enableTournament, timeslots }:
               <select name="timeslotId" className="select select-bordered" required>
                 {timeslots.map((slot) => (
                   <option key={slot.id} value={slot.id}>
+                    {slot.title ? `${slot.title} · ` : ""}
                     {formatDateTime(slot.startsAt)} · {slot.reservedCount}/{slot.capacity}
                   </option>
                 ))}

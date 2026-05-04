@@ -123,7 +123,10 @@ export async function checkInAction(formData: FormData) {
     reservationId: formString(formData, "reservationId"),
     adminUserId
   });
+  revalidatePath(`/admin/events/${eventId}`);
   revalidatePath(`/admin/events/${eventId}/check-in`);
+  revalidatePath(`/admin/events/${eventId}/reservations`);
+  revalidatePath(`/admin/events/${eventId}/schedule`);
 }
 
 export async function cancelAdminReservationAction(formData: FormData) {
@@ -139,6 +142,8 @@ export async function cancelAdminReservationAction(formData: FormData) {
   });
   revalidatePath(`/admin/events/${eventId}`);
   revalidatePath(`/admin/events/${eventId}/reservations`);
+  revalidatePath(`/admin/events/${eventId}/check-in`);
+  revalidatePath(`/admin/events/${eventId}/schedule`);
 }
 
 export async function markNoShowAction(formData: FormData) {
@@ -154,6 +159,7 @@ export async function markNoShowAction(formData: FormData) {
   revalidatePath(`/admin/events/${eventId}`);
   revalidatePath(`/admin/events/${eventId}/reservations`);
   revalidatePath(`/admin/events/${eventId}/check-in`);
+  revalidatePath(`/admin/events/${eventId}/schedule`);
 }
 
 export async function createEventAction(formData: FormData) {
@@ -202,6 +208,7 @@ export async function addTimeslotAction(formData: FormData) {
     adminUserId,
     eventId,
     eventDayId: formString(formData, "eventDayId"),
+    title: formString(formData, "title"),
     startsAt: formTime(formData, "startsAt"),
     endsAt: formTime(formData, "endsAt"),
     capacity: formNumber(formData, "capacity", 20)
@@ -225,6 +232,7 @@ export async function updateTimeslotAction(formData: FormData) {
     adminUserId,
     eventId,
     timeslotId: formString(formData, "timeslotId"),
+    title: formString(formData, "title"),
     capacity: formNumber(formData, "capacity", 20),
     status
   });
@@ -253,6 +261,7 @@ export async function updateTimeslotsAction(formData: FormData) {
       adminUserId,
       eventId,
       timeslotId,
+      title: formString(formData, `title-${timeslotId}`),
       capacity: formNumber(formData, `capacity-${timeslotId}`, 20),
       status
     });
@@ -305,5 +314,7 @@ export async function manualOverbookAction(formData: FormData) {
   revalidatePath(`/admin/events/${eventId}`);
   revalidatePath(`/admin/events/${eventId}/reservations`);
   revalidatePath(`/admin/events/${eventId}/check-in`);
+  revalidatePath(`/admin/events/${eventId}/schedule`);
   revalidatePath(`/event/${eventId}`);
+  revalidatePath(`/event/${eventId}/schedule`);
 }

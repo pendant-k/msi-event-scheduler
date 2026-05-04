@@ -123,6 +123,7 @@ export const timeslots = pgTable(
     id: text("id").primaryKey(),
     eventId: text("event_id").notNull().references(() => events.id, { onDelete: "cascade" }),
     eventDayId: text("event_day_id").notNull().references(() => eventDays.id, { onDelete: "cascade" }),
+    title: text("title"),
     startsAt: timestamptz("starts_at").notNull(),
     endsAt: timestamptz("ends_at").notNull(),
     capacity: integer("capacity").notNull(),

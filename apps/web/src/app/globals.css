@@ -1098,6 +1098,28 @@
     font-weight: 900;
   }
 
+  .timeslot-modal-tabs {
+    display: inline-flex;
+    gap: 0.25rem;
+    border-radius: 8px 8px 0 0;
+    background: #f8fafc;
+    padding: 0.25rem;
+  }
+
+  .timeslot-modal-tabs button {
+    border-radius: 6px;
+    padding: 0.5rem 0.875rem;
+    color: var(--app-muted);
+    font-size: 0.875rem;
+    font-weight: 900;
+  }
+
+  .timeslot-modal-tabs button[data-active="true"] {
+    background: var(--app-surface);
+    color: var(--app-blue);
+    box-shadow: 0 1px 4px rgba(31, 35, 41, 0.08);
+  }
+
   .timeslot-detail-grid {
     display: grid;
     gap: 0.625rem;
@@ -1131,6 +1153,19 @@
     color: var(--app-text);
     font-size: 0.9375rem;
     font-weight: 900;
+  }
+
+  .timeslot-reservation-panel {
+    min-height: 8rem;
+  }
+
+  .timeslot-reservation-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--app-muted);
+    font-size: 0.875rem;
+    font-weight: 800;
   }
 
   .schedule-table {

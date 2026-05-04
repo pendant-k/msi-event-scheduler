@@ -315,6 +315,7 @@ export async function searchCheckInRows(
       school: participants.school,
       grade: participants.grade,
       phoneNumber: participantAccesses.phoneNumber,
+      timeslotTitle: timeslots.title,
       startsAt: timeslots.startsAt,
       endsAt: timeslots.endsAt,
       timeslotId: timeslots.id
@@ -324,7 +325,6 @@ export async function searchCheckInRows(
     .innerJoin(participantAccesses, eq(participantAccesses.id, reservations.accessId))
     .innerJoin(timeslots, eq(timeslots.id, reservations.timeslotId))
     .where(and(...conditions))
-    .orderBy(timeslots.startsAt, participants.name)
-    .limit(50);
+    .orderBy(timeslots.startsAt, participants.name);
   return rows.map((row) => ({ ...row, maskedPhone: maskPhone(row.phoneNumber), phoneNumber: undefined }));
 }

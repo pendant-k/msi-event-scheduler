@@ -82,6 +82,7 @@ create table if not exists timeslots (
   id text primary key,
   event_id text not null references events(id) on delete cascade,
   event_day_id text not null references event_days(id) on delete cascade,
+  title text,
   starts_at timestamptz not null,
   ends_at timestamptz not null,
   capacity integer not null check (capacity >= 0),

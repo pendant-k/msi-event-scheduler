@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import {
-  BadgeCheck,
   CalendarDays,
   ChevronDown,
   Clock,
@@ -46,8 +45,7 @@ const globalNavItems = [
 
 const eventNavItems = [
   { key: "hub", label: "운영 허브", icon: LayoutDashboard, path: "" },
-  { key: "check-in", label: "체크인", icon: BadgeCheck, path: "/check-in" },
-  { key: "reservations", label: "예약", icon: Rows3, path: "/reservations" },
+  { key: "reservations", label: "예약/체크인", icon: Rows3, path: "/reservations" },
   { key: "schedule", label: "시간표", icon: Clock, path: "/schedule" },
   { key: "public", label: "예약 페이지", icon: ExternalLink, path: null }
 ] as const;

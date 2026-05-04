@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, EyeOff, Save, Trash2 } from "lucide-react";
 import { getSchedule } from "@scheduler/domain";
 import { deleteTimeslotAction, updateTimeslotsAction } from "@/app/actions";
+import { AdminRefreshButton } from "@/components/admin-refresh-button";
 import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { Schedule } from "@/components/schedule";
 import { ScheduleEditorModals } from "@/components/schedule-editor-modals";
@@ -27,15 +28,18 @@ export default async function AdminSchedulePage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link href={`/admin/events/${eventId}`} className="btn btn-ghost btn-sm">
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          운영 허브
-        </Link>
-        <h1 className="mt-3 text-2xl font-bold">시간표 관리</h1>
-        <p className="text-sm text-base-content/60">
-          {schedule.event.name} · 숨김 {hiddenCount}개
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <Link href={`/admin/events/${eventId}`} className="btn btn-ghost btn-sm">
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            운영 허브
+          </Link>
+          <h1 className="mt-3 text-2xl font-bold">시간표 관리</h1>
+          <p className="text-sm text-base-content/60">
+            {schedule.event.name} · 숨김 {hiddenCount}개
+          </p>
+        </div>
+        <AdminRefreshButton label="시간표 새로고침" />
       </div>
 
       <Schedule event={schedule.event} day={schedule.selectedDay} timeslots={schedule.timeslots} mode="admin" />
@@ -59,7 +63,7 @@ export default async function AdminSchedulePage({ params }: { params: Promise<{ 
               {schedule.timeslots.map((slot) => (
                 <div
                   key={slot.id}
-                  className="slot-row-flat grid overflow-hidden md:grid-cols-[minmax(0,1fr)_7.5rem_minmax(10.5rem,13rem)_7rem]"
+                  className="slot-row-flat grid overflow-hidden md:grid-cols-[minmax(0,1fr)_minmax(9rem,12rem)_7.5rem_minmax(10.5rem,13rem)_7rem]"
                 >
                   <input type="hidden" name="slotId" value={slot.id} />
                   <div className="slot-row-cell min-w-0 text-sm">
@@ -71,6 +75,15 @@ export default async function AdminSchedulePage({ params }: { params: Promise<{ 
                       <span className="slot-row-status">{statusLabels[slot.status]}</span>
                     </div>
                   </div>
+                  <label className="slot-row-cell form-control">
+                    <span className="label-text">이름</span>
+                    <input
+                      name={`title-${slot.id}`}
+                      className="input input-bordered h-11 min-h-11 w-full min-w-0 text-sm"
+                      defaultValue={slot.title ?? ""}
+                      placeholder="예: 오전 체험"
+                    />
+                  </label>
                   <label className="slot-row-cell form-control">
                     <span className="label-text">정원</span>
                     <input
