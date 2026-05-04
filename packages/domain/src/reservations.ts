@@ -16,6 +16,17 @@ type Actor =
   | { type: "admin"; adminUserId: string };
 
 const activeReservationStatusSql = sql`${reservations.status} in ('RESERVED', 'LATE_RESERVED', 'CHECKED_IN')`;
+const reservationStatuses = new Set(["RESERVED", "LATE_RESERVED", "CHECKED_IN", "CANCELLED", "NO_SHOW"]);
+type ReservationStatus = "RESERVED" | "LATE_RESERVED" | "CHECKED_IN" | "CANCELLED" | "NO_SHOW";
+
+function countsTowardCapacity(status: string) {
+  return status === "RESERVED" || status === "LATE_RESERVED" || status === "CHECKED_IN";
+}
+
+function parseReservationStatus(status: string): ReservationStatus {
+  if (!reservationStatuses.has(status)) throw new DomainError("invalid_input", "예약 상태가 올바르지 않습니다.");
+  return status as ReservationStatus;
+}
 
 export async function createReservation(
   db: SchedulerDb,
@@ -287,6 +298,86 @@ export async function markNoShowReservation(
     createdAt: timestamp
   });
   return { ...reservation, status: "NO_SHOW" as const };
+}
+
+export async function updateAdminReservationStatus(
+  db: SchedulerDb,
+  input: { eventId: string; reservationId: string; adminUserId: string; status: string; reason?: string }
+) {
+  const targetStatus = parseReservationStatus(input.status);
+  return db.transaction(async (tx) => {
+    const reservation = await tx.query.reservations.findFirst({
+      where: and(eq(reservations.id, input.reservationId), eq(reservations.eventId, input.eventId))
+    });
+    if (!reservation) throw new DomainError("not_found", "예약을 찾을 수 없습니다.");
+    if (reservation.status === targetStatus) return reservation;
+
+    const slot = await tx.query.timeslots.findFirst({ where: eq(timeslots.id, reservation.timeslotId) });
+    if (!slot) throw new DomainError("not_found", "예약 일정을 찾을 수 없습니다.");
+
+    const timestamp = nowIso();
+    const currentCounts = countsTowardCapacity(reservation.status);
+    const targetCounts = countsTowardCapacity(targetStatus);
+    if (currentCounts !== targetCounts) {
+      await tx
+        .update(timeslots)
+        .set({
+          reservedCount: targetCounts
+            ? sql`${timeslots.reservedCount} + 1`
+            : sql`greatest(${timeslots.reservedCount} - 1, 0)`,
+          updatedAt: timestamp
+        })
+        .where(eq(timeslots.id, slot.id));
+    }
+
+    const checkedInAt = targetStatus === "CHECKED_IN" ? reservation.checkedInAt ?? timestamp : null;
+    const cancellationFields =
+      targetStatus === "CANCELLED"
+        ? {
+            cancelledAt: reservation.cancelledAt ?? timestamp,
+            cancelledBy: "ADMIN" as const,
+            cancellationReason: input.reason ?? reservation.cancellationReason ?? "admin_status_change"
+          }
+        : {
+            cancelledAt: null,
+            cancelledBy: null,
+            cancellationReason: null
+          };
+
+    await tx
+      .update(reservations)
+      .set({
+        status: targetStatus,
+        checkedInAt,
+        ...cancellationFields,
+        isOverbooked: targetCounts ? slot.reservedCount + (currentCounts ? 0 : 1) > slot.capacity : false,
+        updatedAt: timestamp
+      })
+      .where(eq(reservations.id, reservation.id));
+
+    await tx.insert(adminLogs).values({
+      id: id("log"),
+      eventId: input.eventId,
+      adminUserId: input.adminUserId,
+      action: "UPDATE_RESERVATION_STATUS",
+      targetType: "reservation",
+      targetId: reservation.id,
+      reason: input.reason ?? null,
+      metadata: {
+        from: reservation.status,
+        to: targetStatus
+      },
+      createdAt: timestamp
+    });
+
+    return {
+      ...reservation,
+      status: targetStatus,
+      checkedInAt,
+      ...cancellationFields,
+      updatedAt: timestamp
+    };
+  });
 }
 
 export async function searchCheckInRows(

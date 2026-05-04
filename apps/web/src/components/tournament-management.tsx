@@ -2,7 +2,8 @@
 
 import { useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { AlertTriangle, Check, GitBranch, Play, RotateCcw, Shuffle, UserCheck, UserPlus, UserX, ZoomIn, ZoomOut } from "lucide-react";
+import { useFormStatus } from "react-dom";
+import { AlertTriangle, Check, GitBranch, LoaderCircle, Play, RotateCcw, Shuffle, UserCheck, UserPlus, UserX, ZoomIn, ZoomOut } from "lucide-react";
 import {
   cancelTournamentCheckInAction,
   createTournamentDraftAction,
@@ -11,6 +12,7 @@ import {
   startTournamentAction,
   tournamentCheckInAction
 } from "@/app/actions";
+import { FormLoadingModal, LoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { formatDateTime } from "@/lib/format";
 import { getReservationStatusLabel } from "@/lib/status-labels";
 
@@ -87,14 +89,21 @@ function ConfirmingSubmitButton({
   children,
   className,
   message,
+  pendingChildren,
+  pendingTitle = "변경사항을 적용하고 있습니다",
+  pendingDescription = "요청한 작업을 저장하는 중입니다.",
   disabled
 }: {
   children: React.ReactNode;
   className: string;
   message: string;
+  pendingChildren?: React.ReactNode;
+  pendingTitle?: string;
+  pendingDescription?: string;
   disabled?: boolean;
 }) {
   const [form, setForm] = useState<HTMLFormElement | null>(null);
+  const { pending } = useFormStatus();
   const modal =
     form && typeof document !== "undefined"
       ? createPortal(
@@ -116,6 +125,7 @@ function ConfirmingSubmitButton({
                 <button
                   className="btn btn-primary"
                   type="button"
+                  disabled={pending}
                   onClick={() => {
                     const target = form;
                     setForm(null);
@@ -139,14 +149,22 @@ function ConfirmingSubmitButton({
       <button
         className={className}
         type="button"
-        disabled={disabled}
+        disabled={disabled || pending}
         onClick={(event) => {
           setForm(event.currentTarget.form);
         }}
       >
-        {children}
+        {pending ? (
+          <>
+            <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+            {pendingChildren ?? children}
+          </>
+        ) : (
+          children
+        )}
       </button>
       {modal}
+      <LoadingModal open={pending} title={pendingTitle} description={pendingDescription} />
     </>
   );
 }
@@ -250,7 +268,13 @@ export function TournamentManagement({ eventId, tournamentCapacity, applicants, 
                 <input type="hidden" name="tournamentId" value={tournament.id} />
                 <input type="hidden" name="matchId" value={match.id} />
                 <input type="hidden" name="winnerEntrantId" value={entrantId} />
-                <ConfirmingSubmitButton className="btn btn-ghost btn-xs shrink-0" message="승자 변경으로 영향받는 후속 경기 결과가 초기화됩니다.">
+                <ConfirmingSubmitButton
+                  className="btn btn-ghost btn-xs shrink-0"
+                  message="승자 변경으로 영향받는 후속 경기 결과가 초기화됩니다."
+                  pendingChildren="저장 중"
+                  pendingTitle="경기 결과를 저장하고 있습니다"
+                  pendingDescription="선택한 승자와 후속 경기 정보를 갱신하는 중입니다."
+                >
                   <Check className="size-3" aria-hidden="true" />
                   우승
                 </ConfirmingSubmitButton>
@@ -322,6 +346,9 @@ export function TournamentManagement({ eventId, tournamentCapacity, applicants, 
       <ConfirmingSubmitButton
         className="btn btn-primary gap-2 md:col-span-2"
         message="새 대진표를 만들면 기존 대진표와 경기 결과가 대체됩니다."
+        pendingChildren="생성 중"
+        pendingTitle="대진표를 만들고 있습니다"
+        pendingDescription="선택한 참가자를 기준으로 대진표와 경기 정보를 저장하는 중입니다."
         disabled={checkedInApplicants.length === 0}
       >
         <Shuffle className="size-4" aria-hidden="true" />
@@ -415,6 +442,9 @@ export function TournamentManagement({ eventId, tournamentCapacity, applicants, 
                   <ConfirmingSubmitButton
                     className="btn btn-outline btn-error btn-sm gap-2"
                     message="대회 체크인을 취소하면 대진표에 배정된 경우 영향받는 후속 경기 결과가 초기화됩니다."
+                    pendingChildren="취소 중"
+                    pendingTitle="대회 체크인을 취소하고 있습니다"
+                    pendingDescription={`${applicant.participantName}님의 대회 체크인 상태를 갱신하는 중입니다.`}
                   >
                     <UserX className="size-4" aria-hidden="true" />
                     체크인 취소
@@ -424,10 +454,11 @@ export function TournamentManagement({ eventId, tournamentCapacity, applicants, 
                 <form action={tournamentCheckInAction}>
                   <input type="hidden" name="eventId" value={eventId} />
                   <input type="hidden" name="reservationId" value={applicant.reservationId} />
-                  <button className="btn btn-primary btn-sm gap-2" type="submit">
+                  <PendingSubmitButton className="btn btn-primary btn-sm gap-2" pendingChildren="체크인 중">
                     <UserCheck className="size-4" aria-hidden="true" />
                     대회 체크인
-                  </button>
+                  </PendingSubmitButton>
+                  <FormLoadingModal title="대회 체크인 처리 중입니다" description={`${applicant.participantName}님의 대회 참가 상태를 저장하는 중입니다.`} />
                 </form>
               )}
             </div>
@@ -458,10 +489,11 @@ export function TournamentManagement({ eventId, tournamentCapacity, applicants, 
                 <form action={startTournamentAction}>
                   <input type="hidden" name="eventId" value={eventId} />
                   <input type="hidden" name="tournamentId" value={tournament.id} />
-                  <button className="btn btn-outline btn-sm gap-2" type="submit">
+                  <PendingSubmitButton className="btn btn-outline btn-sm gap-2" pendingChildren="시작 중">
                     <Play className="size-4" aria-hidden="true" />
                     진행 시작
-                  </button>
+                  </PendingSubmitButton>
+                  <FormLoadingModal title="토너먼트를 시작하고 있습니다" description="대진표 상태를 진행 중으로 변경하는 중입니다." />
                 </form>
               )}
               <details className="dropdown dropdown-end">
@@ -667,6 +699,7 @@ export function TournamentManagement({ eventId, tournamentCapacity, applicants, 
                   </span>
                   <span>{!picker.currentEntrantId ? "현재 선택" : "선택"}</span>
                 </button>
+                <FormLoadingModal title="참가자 배정을 변경하고 있습니다" description="선택한 경기 위치를 비우는 중입니다." />
               </form>
               {entrants.map((entrant) => {
                 const selected = picker.currentEntrantId === entrant.id;
@@ -686,6 +719,7 @@ export function TournamentManagement({ eventId, tournamentCapacity, applicants, 
                       </span>
                       <span>{selected ? "현재 선택" : "선택"}</span>
                     </button>
+                    <FormLoadingModal title="참가자 배정을 변경하고 있습니다" description={`${entrant.participantName}님을 선택한 경기 위치에 저장하는 중입니다.`} />
                   </form>
                 );
               })}

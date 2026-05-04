@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { adminLoginAction } from "@/app/actions";
 import { EventDeleteButton } from "@/components/event-delete-button";
+import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { getAdminUserId } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
 
@@ -23,9 +24,10 @@ export default async function AdminHomePage() {
         <input name="adminId" type="text" className="input input-bordered w-full" defaultValue={defaultAdminId} autoComplete="username" required />
         <input name="password" type="password" className="input input-bordered w-full" placeholder="관리자 비밀번호" required />
         <p className="text-sm text-base-content/60">Vercel 환경변수에 등록된 관리자 아이디로 로그인합니다.</p>
-        <button className="btn btn-primary w-full" type="submit">
+        <PendingSubmitButton className="btn btn-primary w-full gap-2" pendingChildren="로그인 중">
           로그인
-        </button>
+        </PendingSubmitButton>
+        <FormLoadingModal title="관리자 로그인 중입니다" description="입력한 관리자 정보를 확인하는 중입니다." />
       </form>
     );
   }

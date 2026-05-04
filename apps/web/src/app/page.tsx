@@ -1,4 +1,5 @@
 import { adminLoginAction } from "@/app/actions";
+import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 
 export default function HomePage() {
   const defaultAdminId = process.env.ADMIN_ID ?? "admin";
@@ -37,9 +38,10 @@ export default function HomePage() {
               />
             </label>
           </div>
-          <button className="btn btn-primary w-full" type="submit">
+          <PendingSubmitButton className="btn btn-primary w-full gap-2" pendingChildren="로그인 중">
             로그인
-          </button>
+          </PendingSubmitButton>
+          <FormLoadingModal title="관리자 로그인 중입니다" description="입력한 관리자 정보를 확인하는 중입니다." />
         </div>
       </form>
     </div>

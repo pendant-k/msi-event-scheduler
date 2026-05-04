@@ -16,6 +16,7 @@ import {
   localAdminUserId,
   manualOverbookReservation,
   markNoShowReservation,
+  updateAdminReservationStatus,
   cancelTournamentCheckIn,
   checkInTournamentEntrant,
   createTournamentDraft,
@@ -168,6 +169,26 @@ export async function markNoShowAction(formData: FormData) {
   revalidatePath(`/admin/events/${eventId}/reservations`);
   revalidatePath(`/admin/events/${eventId}/check-in`);
   revalidatePath(`/admin/events/${eventId}/schedule`);
+}
+
+export async function updateReservationStatusAction(formData: FormData) {
+  const eventId = formString(formData, "eventId");
+  const adminUserId = await getAdminUserId();
+  if (!adminUserId) redirect("/admin");
+  const db = await getAppDb();
+  await updateAdminReservationStatus(db, {
+    eventId,
+    reservationId: formString(formData, "reservationId"),
+    status: formString(formData, "status"),
+    adminUserId,
+    reason: formString(formData, "reason") || "admin_status_change"
+  });
+  revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/admin/events/${eventId}/reservations`);
+  revalidatePath(`/admin/events/${eventId}/check-in`);
+  revalidatePath(`/admin/events/${eventId}/schedule`);
+  revalidatePath(`/event/${eventId}`);
+  revalidatePath(`/event/${eventId}/schedule`);
 }
 
 export async function createEventAction(formData: FormData) {

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { manualOverbookAction } from "@/app/actions";
+import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { formatDateTime } from "@/lib/format";
 
 const MODAL_EXIT_MS = 180;
@@ -126,10 +127,11 @@ export function ManualReservationModal({ eventId, enableTournament, timeslots }:
               <button className="btn btn-ghost" type="button" onClick={closeModal}>
                 취소
               </button>
-              <button className="btn btn-primary" type="submit">
+              <PendingSubmitButton className="btn btn-primary gap-2" pendingChildren="추가 중">
                 추가하기
-              </button>
+              </PendingSubmitButton>
             </div>
+            <FormLoadingModal title="수동 예약을 추가하고 있습니다" description="참가자 접근 정보와 예약 내역을 저장하는 중입니다." />
           </form>
         </div>
         <div className="modal-backdrop" onClick={closeModal}>

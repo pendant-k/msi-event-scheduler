@@ -4,6 +4,7 @@ import { getParticipantSession } from "@scheduler/domain";
 import { participantAccessAction } from "@/app/actions";
 import { ParticipantReservation } from "@/components/participant-reservation";
 import { ParticipantReservationsModal } from "@/components/participant-reservations-modal";
+import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { getParticipantToken } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
 
@@ -65,9 +66,10 @@ export default async function EventPage({
             <span className="label-text">행사 비밀번호</span>
             <input name="password" type="password" className="input input-bordered" required />
           </label>
-          <button className="btn btn-primary w-full" type="submit">
+          <PendingSubmitButton className="btn btn-primary w-full gap-2" pendingChildren="확인 중">
             계속하기
-          </button>
+          </PendingSubmitButton>
+          <FormLoadingModal title="예약 접근을 확인하고 있습니다" description="입력한 전화번호와 비밀번호를 확인하는 중입니다." />
         </form>
       </div>
     );

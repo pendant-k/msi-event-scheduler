@@ -1,14 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createDatabase, eventAdmins, eventDays, events, initializeDatabase, timeslots, type SchedulerDb } from "@scheduler/db";
+import { createDatabase, eventAdmins, eventDays, events, initializeDatabase, reservations, timeslots, type SchedulerDb } from "@scheduler/db";
 import { eq, sql } from "drizzle-orm";
 import { updateTimeslotSettings } from "../src/events";
 import { createOrLoginParticipantAccess } from "../src/participantAccess";
 import {
   cancelReservation,
+  checkInReservation,
   createReservation,
   listReservationsForAccess,
   markNoShowReservation,
-  searchCheckInRows
+  searchCheckInRows,
+  updateAdminReservationStatus
 } from "../src/reservations";
 import { DomainError } from "../src/errors";
 
@@ -188,6 +190,64 @@ describeWithDb("reservation domain", () => {
     const rows = await searchCheckInRows(db, { eventId: "event-test", query: "1234" });
     expect(rows).toHaveLength(1);
     expect(rows[0]?.phoneNumber).toBe("01099991234");
+  });
+
+  it("lets admins freely change reservation status while keeping slot counts consistent", async () => {
+    const session = await access("01099995555");
+    const reservation = await createReservation(db, {
+      eventId: "event-test",
+      accessId: session.accessId,
+      timeslotId: "slot-test",
+      name: "상태변경",
+      school: "운영초",
+      grade: 5,
+      guardianConfirmed: false,
+      tournament: false
+    });
+
+    await checkInReservation(db, {
+      eventId: "event-test",
+      reservationId: reservation.id,
+      adminUserId: "admin-test"
+    });
+    await updateAdminReservationStatus(db, {
+      eventId: "event-test",
+      reservationId: reservation.id,
+      adminUserId: "admin-test",
+      status: "RESERVED",
+      reason: "undo_check_in"
+    });
+    let row = await db.query.reservations.findFirst({ where: eq(reservations.id, reservation.id) });
+    let slot = await db.query.timeslots.findFirst({ where: eq(timeslots.id, "slot-test") });
+    expect(row?.status).toBe("RESERVED");
+    expect(row?.checkedInAt).toBeNull();
+    expect(slot?.reservedCount).toBe(1);
+
+    await updateAdminReservationStatus(db, {
+      eventId: "event-test",
+      reservationId: reservation.id,
+      adminUserId: "admin-test",
+      status: "CANCELLED",
+      reason: "admin_test_cancel"
+    });
+    row = await db.query.reservations.findFirst({ where: eq(reservations.id, reservation.id) });
+    slot = await db.query.timeslots.findFirst({ where: eq(timeslots.id, "slot-test") });
+    expect(row?.status).toBe("CANCELLED");
+    expect(row?.cancelledBy).toBe("ADMIN");
+    expect(slot?.reservedCount).toBe(0);
+
+    await updateAdminReservationStatus(db, {
+      eventId: "event-test",
+      reservationId: reservation.id,
+      adminUserId: "admin-test",
+      status: "RESERVED",
+      reason: "restore"
+    });
+    row = await db.query.reservations.findFirst({ where: eq(reservations.id, reservation.id) });
+    slot = await db.query.timeslots.findFirst({ where: eq(timeslots.id, "slot-test") });
+    expect(row?.status).toBe("RESERVED");
+    expect(row?.cancelledAt).toBeNull();
+    expect(slot?.reservedCount).toBe(1);
   });
 
   it("prevents concurrent reservations from exceeding slot capacity", async () => {

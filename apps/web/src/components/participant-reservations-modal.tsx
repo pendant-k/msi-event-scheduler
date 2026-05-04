@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ClipboardList, X } from "lucide-react";
 import { cancelParticipantReservationAction, participantAccessAction } from "@/app/actions";
+import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { formatDateTime } from "@/lib/format";
 import { getReservationStatusLabel, getReservationStatusTone } from "@/lib/status-labels";
 
@@ -89,9 +90,10 @@ export function ParticipantReservationsModal({ eventId, rows, authenticated, def
                         <form action={cancelParticipantReservationAction}>
                           <input type="hidden" name="eventId" value={eventId} />
                           <input type="hidden" name="reservationId" value={row.id} />
-                          <button className="btn btn-error btn-outline btn-sm" type="submit">
+                          <PendingSubmitButton className="btn btn-error btn-outline btn-sm gap-2" pendingChildren="취소 중">
                             예약 취소
-                          </button>
+                          </PendingSubmitButton>
+                          <FormLoadingModal title="예약을 취소하고 있습니다" description={`${row.participantName}님의 예약 상태를 갱신하는 중입니다.`} />
                         </form>
                       )}
                     </div>
@@ -112,9 +114,10 @@ export function ParticipantReservationsModal({ eventId, rows, authenticated, def
                 <input name="password" type="password" className="input input-bordered" required />
               </label>
               <p className="text-sm text-base-content/60">비밀번호를 잊은 경우 현장 운영자에게 문의해 주세요.</p>
-              <button className="btn btn-primary w-full" type="submit">
+              <PendingSubmitButton className="btn btn-primary w-full gap-2" pendingChildren="확인 중">
                 확인하기
-              </button>
+              </PendingSubmitButton>
+              <FormLoadingModal title="예약 내역을 확인하고 있습니다" description="입력한 전화번호와 비밀번호를 확인하는 중입니다." />
             </form>
           )}
         </div>

@@ -8,7 +8,7 @@ import { deleteTimeslotAction, updateTimeslotAction } from "@/app/actions";
 import { AdminRefreshButton } from "@/components/admin-refresh-button";
 import type { AdminReservationRow } from "@/components/admin-live-reservations";
 import { AdminReservationActionCard } from "@/components/admin-live-reservations";
-import { PendingSubmitButton } from "@/components/loading-modal";
+import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { formatTime } from "@/lib/format";
 
 function getLoadState(slot: Timeslot) {
@@ -457,14 +457,15 @@ export function Schedule({
                             예약 이력이 있는 일정은 삭제할 수 없습니다. 운영에서 제외하려면 숨김으로 저장하세요.
                           </div>
                         </div>
-                        <button
+                        <PendingSubmitButton
                           className="btn btn-error btn-outline btn-sm gap-2"
-                          type="submit"
+                          pendingChildren="삭제 중"
                           disabled={selectedSlot.reservedCount > 0}
                         >
                           <Trash2 className="size-4" aria-hidden="true" />
                           삭제
-                        </button>
+                        </PendingSubmitButton>
+                        <FormLoadingModal title="일정을 삭제하고 있습니다" description="선택한 일정을 시간표에서 제거하는 중입니다." />
                       </form>
                     </div>
                   ) : (

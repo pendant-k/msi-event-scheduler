@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { DataTable } from "@scheduler/ui/data-table";
-import { Ban, RefreshCw, UserX } from "lucide-react";
-import { cancelAdminReservationAction, checkInAction, markNoShowAction } from "@/app/actions";
+import { Ban, RefreshCw, RotateCcw, Save, UserCheck, UserX } from "lucide-react";
+import { updateReservationStatusAction } from "@/app/actions";
+import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { formatClockTime, formatDateTime, formatTime } from "@/lib/format";
 import { getReservationStatusLabel, getReservationStatusTone, isActiveReservationStatus } from "@/lib/status-labels";
 
@@ -36,6 +37,7 @@ type AdminLiveReservationsProps = {
 };
 
 const refetchInterval = 5000;
+const editableStatuses = ["RESERVED", "LATE_RESERVED", "CHECKED_IN", "NO_SHOW", "CANCELLED"] as const;
 
 async function fetchReservations(eventId: string, query?: string): Promise<AdminReservationsPayload> {
   const params = new URLSearchParams();
@@ -70,8 +72,6 @@ function getTimeslotLabel(row: Pick<AdminReservationRow, "timeslotTitle" | "star
 }
 
 export function AdminReservationActionCard({ eventId, row }: { eventId: string; row: AdminReservationRow }) {
-  const active = isActiveReservationStatus(row.status);
-
   return (
     <div className="reservation-action-card">
       <div className="min-w-0">
@@ -91,29 +91,68 @@ export function AdminReservationActionCard({ eventId, row }: { eventId: string; 
       </div>
 
       <div className="reservation-action-buttons">
-        <form action={checkInAction}>
+        <form action={updateReservationStatusAction}>
           <input type="hidden" name="eventId" value={eventId} />
           <input type="hidden" name="reservationId" value={row.id} />
-          <button className="btn btn-primary btn-sm" type="submit" disabled={row.status === "CHECKED_IN" || !active}>
+          <input type="hidden" name="status" value="CHECKED_IN" />
+          <input type="hidden" name="reason" value="admin_quick_check_in" />
+          <PendingSubmitButton className="btn btn-primary btn-sm gap-2" pendingChildren="체크인 중" disabled={row.status === "CHECKED_IN"}>
+            <UserCheck aria-hidden="true" className="h-4 w-4" />
             체크인
-          </button>
+          </PendingSubmitButton>
+          <FormLoadingModal title="체크인 처리 중입니다" description={`${row.participantName} 예약 상태를 갱신하고 있습니다.`} />
         </form>
-        <form action={markNoShowAction}>
+        {row.status === "CHECKED_IN" && (
+          <form action={updateReservationStatusAction}>
+            <input type="hidden" name="eventId" value={eventId} />
+            <input type="hidden" name="reservationId" value={row.id} />
+            <input type="hidden" name="status" value="RESERVED" />
+            <input type="hidden" name="reason" value="admin_undo_check_in" />
+            <PendingSubmitButton className="btn btn-outline btn-sm gap-2" pendingChildren="취소 중">
+              <RotateCcw aria-hidden="true" className="h-4 w-4" />
+              체크인 취소
+            </PendingSubmitButton>
+            <FormLoadingModal title="체크인을 취소하고 있습니다" description={`${row.participantName} 예약 상태를 되돌리는 중입니다.`} />
+          </form>
+        )}
+        <form action={updateReservationStatusAction}>
           <input type="hidden" name="eventId" value={eventId} />
           <input type="hidden" name="reservationId" value={row.id} />
-          <button className="btn btn-no-show btn-sm" type="submit" disabled={!active}>
+          <input type="hidden" name="status" value="NO_SHOW" />
+          <input type="hidden" name="reason" value="admin_quick_no_show" />
+          <PendingSubmitButton className="btn btn-no-show btn-sm gap-2" pendingChildren="노쇼 처리 중" disabled={row.status === "NO_SHOW"}>
             <UserX aria-hidden="true" className="h-4 w-4" />
             노쇼
-          </button>
+          </PendingSubmitButton>
+          <FormLoadingModal title="노쇼 처리 중입니다" description={`${row.participantName} 예약 상태를 갱신하고 있습니다.`} />
         </form>
-        <form action={cancelAdminReservationAction}>
+        <form action={updateReservationStatusAction}>
           <input type="hidden" name="eventId" value={eventId} />
           <input type="hidden" name="reservationId" value={row.id} />
+          <input type="hidden" name="status" value="CANCELLED" />
           <input type="hidden" name="reason" value="admin_cancel" />
-          <button className="btn btn-cancel-reservation btn-sm" type="submit" disabled={!active}>
+          <PendingSubmitButton className="btn btn-cancel-reservation btn-sm gap-2" pendingChildren="취소 중" disabled={row.status === "CANCELLED"}>
             <Ban aria-hidden="true" className="h-4 w-4" />
             취소
-          </button>
+          </PendingSubmitButton>
+          <FormLoadingModal title="예약을 취소하고 있습니다" description={`${row.participantName} 예약을 취소 처리하는 중입니다.`} />
+        </form>
+        <form action={updateReservationStatusAction} className="reservation-status-form">
+          <input type="hidden" name="eventId" value={eventId} />
+          <input type="hidden" name="reservationId" value={row.id} />
+          <input type="hidden" name="reason" value="admin_status_select" />
+          <select className="select select-bordered select-sm" name="status" defaultValue={row.status}>
+            {editableStatuses.map((status) => (
+              <option key={status} value={status}>
+                {getReservationStatusLabel(status)}
+              </option>
+            ))}
+          </select>
+          <PendingSubmitButton className="btn btn-outline btn-sm gap-2" pendingChildren="변경 중">
+            <Save aria-hidden="true" className="h-4 w-4" />
+            상태 변경
+          </PendingSubmitButton>
+          <FormLoadingModal title="예약 상태를 변경하고 있습니다" description={`${row.participantName} 예약 상태를 저장하는 중입니다.`} />
         </form>
       </div>
     </div>
