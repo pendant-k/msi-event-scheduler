@@ -8,6 +8,7 @@ import {
   createOrLoginParticipantAccess,
   createReservation,
   createTimeslot,
+  deleteTimeslot,
   DomainError,
   getOrCreateParticipantAccessByAdmin,
   getParticipantSession,
@@ -30,6 +31,24 @@ function formNumber(formData: FormData, key: string, fallback: number) {
   return Number.isFinite(value) ? value : fallback;
 }
 
+function formTime(formData: FormData, key: string) {
+  const value = formString(formData, key);
+  if (value) return value;
+
+  const period = formString(formData, `${key}Period`);
+  const hourRaw = formString(formData, `${key}Hour`);
+  const minuteRaw = formString(formData, `${key}Minute`);
+  const hour = Number(hourRaw);
+  const minute = Number(minuteRaw);
+  if ((period !== "AM" && period !== "PM") || !Number.isInteger(hour) || hour < 1 || hour > 12 || !Number.isInteger(minute)) {
+    return "";
+  }
+  if (!hourRaw || !minuteRaw || minute < 0 || minute > 59) return "";
+
+  const hour24 = period === "AM" ? hour % 12 : (hour % 12) + 12;
+  return `${String(hour24).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
 export async function participantAccessAction(formData: FormData) {
   const eventId = formString(formData, "eventId");
   const phoneNumber = formString(formData, "phoneNumber");
@@ -38,7 +57,7 @@ export async function participantAccessAction(formData: FormData) {
   const db = await getAppDb();
   const session = await createOrLoginParticipantAccess(db, { eventId, phoneNumber, password });
   await setParticipantToken(session.token, session.expiresAt);
-  const allowedRedirects = new Set([`/event/${eventId}`, `/event/${eventId}/reservations`]);
+  const allowedRedirects = new Set([`/event/${eventId}`, `/event/${eventId}?reservations=1`]);
   redirect(allowedRedirects.has(redirectTo) ? redirectTo : `/event/${eventId}`);
 }
 
@@ -61,7 +80,7 @@ export async function createReservationAction(formData: FormData) {
     tournament: formData.get("tournament") === "on"
   });
   revalidatePath(`/event/${eventId}`);
-  redirect(`/event/${eventId}/reservations`);
+  redirect(`/event/${eventId}?reservations=1`);
 }
 
 export async function cancelParticipantReservationAction(formData: FormData) {
@@ -75,7 +94,9 @@ export async function cancelParticipantReservationAction(formData: FormData) {
     actor: { type: "participant", accessId: session.accessId },
     reason: "participant_self_cancel"
   });
+  revalidatePath(`/event/${eventId}`);
   revalidatePath(`/event/${eventId}/reservations`);
+  redirect(`/event/${eventId}?reservations=1`);
 }
 
 export async function adminLoginAction(formData: FormData) {
@@ -144,8 +165,8 @@ export async function createEventAction(formData: FormData) {
     name: formString(formData, "name"),
     description: formString(formData, "description"),
     eventDate: formString(formData, "eventDate"),
-    startsAt: formString(formData, "startsAt"),
-    endsAt: formString(formData, "endsAt"),
+    startsAt: formTime(formData, "startsAt"),
+    endsAt: formTime(formData, "endsAt"),
     timeslotMinutes: formNumber(formData, "timeslotMinutes", 60),
     capacity: formNumber(formData, "capacity", 20),
     enableTournament: formData.get("enableTournament") === "on",
@@ -165,8 +186,8 @@ export async function addEventDayAction(formData: FormData) {
     eventId,
     eventDate: formString(formData, "eventDate"),
     label: formString(formData, "label"),
-    startsAt: formString(formData, "startsAt"),
-    endsAt: formString(formData, "endsAt")
+    startsAt: formTime(formData, "startsAt"),
+    endsAt: formTime(formData, "endsAt")
   });
   revalidatePath(`/admin/events/${eventId}`);
   revalidatePath(`/admin/events/${eventId}/schedule`);
@@ -181,8 +202,8 @@ export async function addTimeslotAction(formData: FormData) {
     adminUserId,
     eventId,
     eventDayId: formString(formData, "eventDayId"),
-    startsAt: formString(formData, "startsAt"),
-    endsAt: formString(formData, "endsAt"),
+    startsAt: formTime(formData, "startsAt"),
+    endsAt: formTime(formData, "endsAt"),
     capacity: formNumber(formData, "capacity", 20)
   });
   revalidatePath(`/admin/events/${eventId}`);
@@ -206,6 +227,52 @@ export async function updateTimeslotAction(formData: FormData) {
     timeslotId: formString(formData, "timeslotId"),
     capacity: formNumber(formData, "capacity", 20),
     status
+  });
+  revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/admin/events/${eventId}/schedule`);
+  revalidatePath(`/event/${eventId}`);
+  revalidatePath(`/event/${eventId}/schedule`);
+}
+
+export async function updateTimeslotsAction(formData: FormData) {
+  const eventId = formString(formData, "eventId");
+  const adminUserId = await getAdminUserId();
+  if (!adminUserId) redirect("/admin");
+  const slotIds = formData
+    .getAll("slotId")
+    .map((value) => String(value).trim())
+    .filter(Boolean);
+  const db = await getAppDb();
+
+  for (const timeslotId of slotIds) {
+    const status = formString(formData, `status-${timeslotId}`);
+    if (status !== "OPEN" && status !== "CLOSED" && status !== "HIDDEN") {
+      throw new DomainError("invalid_input", "타임슬롯 상태가 올바르지 않습니다.");
+    }
+    await updateTimeslotSettings(db, {
+      adminUserId,
+      eventId,
+      timeslotId,
+      capacity: formNumber(formData, `capacity-${timeslotId}`, 20),
+      status
+    });
+  }
+
+  revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/admin/events/${eventId}/schedule`);
+  revalidatePath(`/event/${eventId}`);
+  revalidatePath(`/event/${eventId}/schedule`);
+}
+
+export async function deleteTimeslotAction(formData: FormData) {
+  const eventId = formString(formData, "eventId");
+  const adminUserId = await getAdminUserId();
+  if (!adminUserId) redirect("/admin");
+  const db = await getAppDb();
+  await deleteTimeslot(db, {
+    adminUserId,
+    eventId,
+    timeslotId: formString(formData, "timeslotId")
   });
   revalidatePath(`/admin/events/${eventId}`);
   revalidatePath(`/admin/events/${eventId}/schedule`);

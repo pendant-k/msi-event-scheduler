@@ -1,13 +1,21 @@
 import Link from "next/link";
-import { getEventBundle } from "@scheduler/domain";
+import { getEventBundle, listReservationsForAccess } from "@scheduler/domain";
 import { getParticipantSession } from "@scheduler/domain";
 import { participantAccessAction } from "@/app/actions";
 import { ParticipantReservation } from "@/components/participant-reservation";
+import { ParticipantReservationsModal } from "@/components/participant-reservations-modal";
 import { getParticipantToken } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
 
-export default async function EventPage({ params }: { params: Promise<{ eventId: string }> }) {
+export default async function EventPage({
+  params,
+  searchParams
+}: {
+  params: Promise<{ eventId: string }>;
+  searchParams?: Promise<{ reservations?: string }>;
+}) {
   const { eventId } = await params;
+  const query = await searchParams;
   const db = await getAppDb();
   const bundle = await getEventBundle(db, eventId);
   if (!bundle) {
@@ -15,8 +23,10 @@ export default async function EventPage({ params }: { params: Promise<{ eventId:
   }
   const session = await getParticipantSession(db, await getParticipantToken());
   const activeSession = session?.eventId === eventId ? session : null;
+  const reservationRows = activeSession ? await listReservationsForAccess(db, eventId, activeSession.accessId) : [];
   const day = bundle.days[0];
   const initialUpdatedAt = new Date().toISOString();
+  const openReservationsModal = query?.reservations === "1";
 
   if (!activeSession) {
     return (
@@ -30,9 +40,12 @@ export default async function EventPage({ params }: { params: Promise<{ eventId:
             <Link href={`/event/${eventId}/schedule`} className="btn btn-outline btn-sm">
               전체 시간표
             </Link>
-            <Link href={`/event/${eventId}/reservations`} className="btn btn-outline btn-sm">
-              내 예약 확인
-            </Link>
+            <ParticipantReservationsModal
+              eventId={eventId}
+              rows={reservationRows}
+              authenticated={false}
+              defaultOpen={openReservationsModal}
+            />
           </div>
         </section>
 
@@ -74,9 +87,12 @@ export default async function EventPage({ params }: { params: Promise<{ eventId:
             <Link href={`/event/${eventId}/schedule`} className="btn btn-outline btn-sm">
               전체 시간표
             </Link>
-            <Link href={`/event/${eventId}/reservations`} className="btn btn-outline btn-sm">
-              내 예약 확인
-            </Link>
+            <ParticipantReservationsModal
+              eventId={eventId}
+              rows={reservationRows}
+              authenticated
+              defaultOpen={openReservationsModal}
+            />
           </div>
         </section>
       </div>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft, CalendarPlus } from "lucide-react";
 import { createEventAction } from "@/app/actions";
+import { KoreanTimeInput } from "@/components/korean-time-input";
+import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { getAdminUserId } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -32,15 +34,9 @@ export default async function NewEventPage() {
           <span className="label-text">날짜</span>
           <input name="eventDate" type="date" className="input input-bordered" required />
         </label>
-        <div className="grid grid-cols-2 gap-2">
-          <label className="form-control">
-            <span className="label-text">시작</span>
-            <input name="startsAt" type="time" className="input input-bordered" defaultValue="10:00" required />
-          </label>
-          <label className="form-control">
-            <span className="label-text">종료</span>
-            <input name="endsAt" type="time" className="input input-bordered" defaultValue="17:00" required />
-          </label>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <KoreanTimeInput name="startsAt" label="시작" defaultValue="10:00" required />
+          <KoreanTimeInput name="endsAt" label="종료" defaultValue="17:00" required />
         </div>
         <label className="form-control">
           <span className="label-text">기본 슬롯 길이(분)</span>
@@ -61,10 +57,14 @@ export default async function NewEventPage() {
           <input name="enableTournament" type="checkbox" className="checkbox" defaultChecked />
           <span className="label-text">예약 시 대회 참가 여부 받기</span>
         </label>
-        <button className="btn btn-primary" type="submit">
+        <PendingSubmitButton pendingChildren="행사 생성 중">
           <CalendarPlus className="size-4" aria-hidden="true" />
           행사 만들기
-        </button>
+        </PendingSubmitButton>
+        <FormLoadingModal
+          title="행사를 생성하고 있습니다"
+          description="행사 정보와 기본 타임슬롯을 저장하는 중입니다."
+        />
       </form>
     </div>
   );

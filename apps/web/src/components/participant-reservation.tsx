@@ -6,6 +6,7 @@ import type { EventDay, Timeslot } from "@scheduler/db";
 import { RefreshCw } from "lucide-react";
 import { createReservationAction } from "@/app/actions";
 import { formatClockTime, formatTime } from "@/lib/format";
+import { FormLoadingModal, PendingSubmitButton } from "./loading-modal";
 import { PrivacyNoticeModal } from "./privacy-notice-modal";
 
 type ParticipantReservationProps = {
@@ -237,9 +238,10 @@ function ParticipantReservationInner({ eventId, enableTournament, day, timeslots
               에 동의합니다.
             </span>
           </div>
-          <button className="btn btn-primary w-full" type="submit" disabled={!selectedTimeslotId}>
+          <PendingSubmitButton className="btn btn-primary w-full gap-2" pendingChildren="예약 신청 중" disabled={!selectedTimeslotId}>
             예약하기
-          </button>
+          </PendingSubmitButton>
+          <FormLoadingModal title="예약을 신청하고 있습니다" description="선택한 시간대의 잔여석을 확인하고 예약을 저장하는 중입니다." />
         </form>
       </aside>
     </>

@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { ArrowLeft, CalendarPlus, Clock, EyeOff, Plus, Save } from "lucide-react";
+import { ArrowLeft, EyeOff, Save, Trash2 } from "lucide-react";
 import { getSchedule } from "@scheduler/domain";
-import { addEventDayAction, addTimeslotAction, updateTimeslotAction } from "@/app/actions";
+import { deleteTimeslotAction, updateTimeslotsAction } from "@/app/actions";
+import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { Schedule } from "@/components/schedule";
+import { ScheduleEditorModals } from "@/components/schedule-editor-modals";
 import { getAdminUserId } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
 import { formatDateTime, formatTime } from "@/lib/format";
@@ -11,7 +13,7 @@ import { redirect } from "next/navigation";
 const statusLabels = {
   OPEN: "예약 가능",
   CLOSED: "마감",
-  HIDDEN: "예약 페이지 숨김"
+  HIDDEN: "숨김"
 } as const;
 
 export default async function AdminSchedulePage({ params }: { params: Promise<{ eventId: string }> }) {
@@ -38,86 +40,7 @@ export default async function AdminSchedulePage({ params }: { params: Promise<{ 
 
       <Schedule event={schedule.event} day={schedule.selectedDay} timeslots={schedule.timeslots} mode="admin" />
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <details className="admin-editor-card surface-flat p-4">
-          <summary>
-            <span className="admin-editor-summary-title">
-              <CalendarPlus className="size-4" aria-hidden="true" />
-              날짜 추가
-            </span>
-            <Plus className="size-4 text-base-content/50" aria-hidden="true" />
-          </summary>
-          <form action={addEventDayAction} className="mt-4 grid gap-3">
-            <input type="hidden" name="eventId" value={eventId} />
-            <label className="form-control">
-              <span className="label-text">날짜</span>
-              <input name="eventDate" type="date" className="input input-bordered" required />
-            </label>
-            <label className="form-control">
-              <span className="label-text">라벨</span>
-              <input name="label" className="input input-bordered" placeholder="Day 2" />
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <label className="form-control">
-                <span className="label-text">시작</span>
-                <input name="startsAt" type="time" className="input input-bordered" />
-              </label>
-              <label className="form-control">
-                <span className="label-text">종료</span>
-                <input name="endsAt" type="time" className="input input-bordered" />
-              </label>
-            </div>
-            <button className="btn btn-outline" type="submit">
-              <CalendarPlus className="size-4" aria-hidden="true" />
-              날짜 추가
-            </button>
-          </form>
-        </details>
-
-        <details className="admin-editor-card surface-flat p-4" open>
-          <summary>
-            <span className="admin-editor-summary-title">
-              <Clock className="size-4" aria-hidden="true" />
-              예외 타임슬롯 추가
-            </span>
-            <Plus className="size-4 text-base-content/50" aria-hidden="true" />
-          </summary>
-          <p className="mt-2 text-sm text-base-content/60">
-            기본 슬롯과 다른 길이의 회차만 별도로 추가하고, 필요 없는 기본 슬롯은 아래에서 숨김 처리합니다.
-          </p>
-          <form action={addTimeslotAction} className="mt-4 grid gap-3">
-            <input type="hidden" name="eventId" value={eventId} />
-            <label className="form-control">
-              <span className="label-text">행사 날짜</span>
-              <select name="eventDayId" className="select select-bordered" required>
-                {schedule.days.map((day) => (
-                  <option key={day.id} value={day.id}>
-                    {day.label ?? day.eventDate} · {day.eventDate}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <label className="form-control">
-                <span className="label-text">시작</span>
-                <input name="startsAt" type="time" className="input input-bordered" required />
-              </label>
-              <label className="form-control">
-                <span className="label-text">종료</span>
-                <input name="endsAt" type="time" className="input input-bordered" required />
-              </label>
-            </div>
-            <label className="form-control">
-              <span className="label-text">정원</span>
-              <input name="capacity" type="number" min={1} className="input input-bordered" defaultValue={defaultCapacity} required />
-            </label>
-            <button className="btn btn-outline" type="submit">
-              <Plus className="size-4" aria-hidden="true" />
-              예외 슬롯 추가
-            </button>
-          </form>
-        </details>
-      </div>
+      <ScheduleEditorModals eventId={eventId} days={schedule.days} defaultCapacity={defaultCapacity} />
 
       <section className="surface-flat p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -127,53 +50,82 @@ export default async function AdminSchedulePage({ params }: { params: Promise<{ 
             숨김 {hiddenCount}
           </div>
         </div>
-        <div className="grid gap-2">
-          {schedule.timeslots.length === 0 ? (
-            <div className="admin-empty-hint">등록된 타임슬롯이 없습니다.</div>
-          ) : (
-            schedule.timeslots.map((slot) => (
-              <form
-                key={slot.id}
-                action={updateTimeslotAction}
-                className="slot-row-flat grid items-end gap-2 p-3 md:grid-cols-[minmax(0,1fr)_120px_170px_auto]"
-              >
-                <input type="hidden" name="eventId" value={eventId} />
-                <input type="hidden" name="timeslotId" value={slot.id} />
-                <div className="min-w-0 text-sm">
-                  <div className="truncate font-medium">
-                    {formatDateTime(slot.startsAt)} - {formatTime(slot.endsAt)}
+        {schedule.timeslots.length === 0 ? (
+          <div className="admin-empty-hint">등록된 타임슬롯이 없습니다.</div>
+        ) : (
+          <form action={updateTimeslotsAction} className="grid gap-3">
+            <input type="hidden" name="eventId" value={eventId} />
+            <div className="grid gap-2">
+              {schedule.timeslots.map((slot) => (
+                <div
+                  key={slot.id}
+                  className="slot-row-flat grid overflow-hidden md:grid-cols-[minmax(0,1fr)_7.5rem_minmax(10.5rem,13rem)_7rem]"
+                >
+                  <input type="hidden" name="slotId" value={slot.id} />
+                  <div className="slot-row-cell min-w-0 text-sm">
+                    <div className="font-medium">
+                      {formatDateTime(slot.startsAt)} - {formatTime(slot.endsAt)}
+                    </div>
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5 text-base-content/60">
+                      <span>예약 {slot.reservedCount}명</span>
+                      <span className="slot-row-status">{statusLabels[slot.status]}</span>
+                    </div>
                   </div>
-                  <div className="text-base-content/60">
-                    예약 {slot.reservedCount}명 · {statusLabels[slot.status]}
+                  <label className="slot-row-cell form-control">
+                    <span className="label-text">정원</span>
+                    <input
+                      name={`capacity-${slot.id}`}
+                      type="number"
+                      min={slot.reservedCount}
+                      className="input input-bordered h-11 min-h-11 w-full min-w-0 text-sm"
+                      defaultValue={slot.capacity}
+                      required
+                    />
+                  </label>
+                  <label className="slot-row-cell form-control">
+                    <span className="label-text">공개 상태</span>
+                    <select
+                      name={`status-${slot.id}`}
+                      className="select select-bordered h-11 min-h-11 w-full min-w-0 text-sm"
+                      defaultValue={slot.status}
+                    >
+                      <option value="OPEN">예약 가능</option>
+                      <option value="CLOSED">마감</option>
+                      <option value="HIDDEN">숨김</option>
+                    </select>
+                  </label>
+                  <div className="slot-row-cell">
+                    <button
+                      className="btn btn-error btn-outline btn-sm w-full gap-2 whitespace-nowrap"
+                      type="submit"
+                      form={`delete-timeslot-${slot.id}`}
+                      formNoValidate
+                      disabled={slot.reservedCount > 0}
+                      title={slot.reservedCount > 0 ? "예약 이력이 있는 슬롯은 삭제할 수 없습니다." : "타임슬롯 삭제"}
+                    >
+                      <Trash2 className="size-4" aria-hidden="true" />
+                      삭제
+                    </button>
                   </div>
                 </div>
-                <label className="form-control">
-                  <span className="label-text">정원</span>
-                  <input
-                    name="capacity"
-                    type="number"
-                    min={slot.reservedCount}
-                    className="input input-bordered input-sm"
-                    defaultValue={slot.capacity}
-                    required
-                  />
-                </label>
-                <label className="form-control">
-                  <span className="label-text">공개 상태</span>
-                  <select name="status" className="select select-bordered select-sm" defaultValue={slot.status}>
-                    <option value="OPEN">예약 가능</option>
-                    <option value="CLOSED">마감</option>
-                    <option value="HIDDEN">예약 페이지 숨김</option>
-                  </select>
-                </label>
-                <button className="btn btn-outline btn-sm" type="submit">
-                  <Save className="size-4" aria-hidden="true" />
-                  저장
-                </button>
-              </form>
-            ))
-          )}
-        </div>
+              ))}
+            </div>
+            <div className="slot-bulk-save-bar">
+              <div className="text-sm font-semibold text-base-content/65">정원과 공개 상태 변경사항을 한 번에 저장합니다.</div>
+              <PendingSubmitButton className="btn btn-primary gap-2" pendingChildren="저장 중">
+                <Save className="size-4" aria-hidden="true" />
+                전체 수정사항 저장
+              </PendingSubmitButton>
+            </div>
+            <FormLoadingModal title="시간표 변경사항을 저장하고 있습니다" description="슬롯 정원과 공개 상태를 반영하는 중입니다." />
+          </form>
+        )}
+        {schedule.timeslots.map((slot) => (
+          <form key={`delete-${slot.id}`} id={`delete-timeslot-${slot.id}`} action={deleteTimeslotAction} className="hidden">
+            <input type="hidden" name="eventId" value={eventId} />
+            <input type="hidden" name="timeslotId" value={slot.id} />
+          </form>
+        ))}
       </section>
     </div>
   );

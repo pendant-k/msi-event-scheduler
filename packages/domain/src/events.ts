@@ -1,6 +1,6 @@
 import { and, asc, eq, sql } from "drizzle-orm";
 import type { SchedulerDb } from "@scheduler/db";
-import { eventAdmins, eventDays, events, timeslots } from "@scheduler/db";
+import { eventAdmins, eventDays, events, reservations, timeslots } from "@scheduler/db";
 import { assertEventAdmin } from "./admin";
 import { DomainError } from "./errors";
 import { id, nowIso, shortCode } from "./utils";
@@ -214,4 +214,17 @@ export async function updateTimeslotSettings(
   if (!updatedSlot) {
     throw new DomainError("invalid_input", "정원은 현재 예약 수보다 작을 수 없습니다.");
   }
+}
+
+export async function deleteTimeslot(db: SchedulerDb, input: { adminUserId: string; eventId: string; timeslotId: string }) {
+  await assertEventAdmin(db, input.eventId, input.adminUserId);
+  const slot = await db.query.timeslots.findFirst({ where: and(eq(timeslots.id, input.timeslotId), eq(timeslots.eventId, input.eventId)) });
+  if (!slot) throw new DomainError("not_found", "타임슬롯을 찾을 수 없습니다.");
+
+  const linkedReservation = await db.query.reservations.findFirst({ where: eq(reservations.timeslotId, slot.id) });
+  if (linkedReservation) {
+    throw new DomainError("invalid_input", "예약 이력이 있는 타임슬롯은 삭제할 수 없습니다. 숨김 처리해 주세요.");
+  }
+
+  await db.delete(timeslots).where(and(eq(timeslots.id, slot.id), eq(timeslots.eventId, input.eventId)));
 }
