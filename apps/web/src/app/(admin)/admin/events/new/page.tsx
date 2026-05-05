@@ -28,7 +28,11 @@ export default async function NewEventPage() {
         </label>
         <label className="form-control">
           <span className="label-text">설명</span>
-          <input name="description" className="input input-bordered" />
+          <textarea
+            name="description"
+            className="textarea textarea-bordered min-h-36"
+            placeholder={"예약 페이지에 표시할 안내를 입력해 주세요.\nMarkdown 문법을 사용할 수 있습니다."}
+          />
         </label>
         <label className="form-control">
           <span className="label-text">날짜</span>

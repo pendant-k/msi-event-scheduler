@@ -23,6 +23,7 @@ import {
   recordMatchWinner,
   replaceMatchEntrant,
   startTournament,
+  updateManagedEventDescription,
   updateTournamentSeed,
   updateTimeslotSettings
 } from "@scheduler/domain";
@@ -221,6 +222,21 @@ export async function deleteEventAction(formData: FormData) {
   revalidatePath(`/admin/events/${eventId}`);
   revalidatePath(`/event/${eventId}`);
   redirect("/admin");
+}
+
+export async function updateEventDescriptionAction(formData: FormData) {
+  const eventId = formString(formData, "eventId");
+  const adminUserId = await getAdminUserId();
+  if (!adminUserId) redirect("/admin");
+  const db = await getAppDb();
+  await updateManagedEventDescription(db, {
+    adminUserId,
+    eventId,
+    description: formString(formData, "description")
+  });
+  revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/event/${eventId}`);
+  revalidatePath(`/event/${eventId}/schedule`);
 }
 
 export async function addEventDayAction(formData: FormData) {

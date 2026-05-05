@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getSchedule, searchCheckInRows } from "@scheduler/domain";
 import { ArrowRight, Clock3, ClipboardList, Download, LayoutDashboard, Trophy } from "lucide-react";
+import { updateEventDescriptionAction } from "@/app/actions";
+import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { Schedule } from "@/components/schedule";
 import { getAdminUserId } from "@/lib/auth";
 import { getAppDb } from "@/lib/db";
@@ -64,9 +66,29 @@ export default async function AdminEventPage({ params }: { params: Promise<{ eve
             대시보드
           </Link>
           <h1 className="mt-3 text-2xl font-bold">{schedule.event.name}</h1>
-          <p className="text-sm text-base-content/60">{schedule.event.description ?? "행사 운영 허브"}</p>
+          <p className="text-sm text-base-content/60">행사 운영 허브</p>
         </div>
       </div>
+
+      <section className="surface-flat p-4">
+        <form action={updateEventDescriptionAction} className="grid gap-3">
+          <input type="hidden" name="eventId" value={eventId} />
+          <label className="form-control">
+            <span className="label-text text-base font-semibold">행사 설명</span>
+            <textarea
+              name="description"
+              className="textarea textarea-bordered min-h-40"
+              defaultValue={schedule.event.description ?? ""}
+              placeholder={"예약 페이지에 표시할 안내를 입력해 주세요.\nMarkdown 문법을 사용할 수 있습니다."}
+            />
+          </label>
+          <p className="text-sm text-base-content/60">줄바꿈, 목록, 굵게, 링크 등 Markdown 문법을 사용할 수 있습니다.</p>
+          <PendingSubmitButton className="btn btn-primary w-full sm:w-fit" pendingChildren="저장 중">
+            설명 저장
+          </PendingSubmitButton>
+          <FormLoadingModal title="행사 설명을 저장하고 있습니다" description="예약 페이지에 표시될 설명을 갱신하는 중입니다." />
+        </form>
+      </section>
 
       <div className="grid gap-3 md:grid-cols-3">
         <div className="stat-flat p-4">

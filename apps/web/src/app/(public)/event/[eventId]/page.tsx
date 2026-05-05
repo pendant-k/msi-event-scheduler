@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getEventBundle, listReservationsForAccess } from "@scheduler/domain";
 import { getParticipantSession } from "@scheduler/domain";
 import { participantAccessAction } from "@/app/actions";
+import { EventDescriptionMarkdown } from "@/components/event-description-markdown";
 import { ParticipantReservation } from "@/components/participant-reservation";
 import { ParticipantReservationsModal } from "@/components/participant-reservations-modal";
 import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
@@ -35,7 +36,10 @@ export default async function EventPage({
         <section className="event-hero space-y-5">
           <div className="space-y-3">
             <h1 className="event-title text-3xl font-bold">{bundle.event.name}</h1>
-            <p className="text-base-content/70">{bundle.event.description}</p>
+            <EventDescriptionMarkdown
+              description={bundle.event.description}
+              className="event-description-markdown text-base-content/70"
+            />
           </div>
           <div className="event-actions flex flex-wrap gap-2">
             <Link href={`/event/${eventId}/schedule`} className="btn btn-outline btn-sm">
@@ -91,7 +95,10 @@ export default async function EventPage({
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h1 className="event-title text-3xl font-bold">{bundle.event.name}</h1>
-              <p className="mt-3 text-base-content/70">{bundle.event.description}</p>
+              <EventDescriptionMarkdown
+                description={bundle.event.description}
+                className="event-description-markdown mt-3 text-base-content/70"
+              />
             </div>
           </div>
           <div className="event-actions flex flex-wrap gap-2">

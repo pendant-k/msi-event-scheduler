@@ -806,6 +806,95 @@
     min-width: 0;
   }
 
+  .event-description-markdown {
+    display: grid;
+    gap: 0.625rem;
+    line-height: 1.7;
+  }
+
+  .event-description-markdown :where(h2, h3, h4, p, ul, ol, blockquote) {
+    margin: 0;
+  }
+
+  .event-description-markdown :where(h2, h3, h4) {
+    color: var(--app-text);
+    font-weight: 900;
+    line-height: 1.35;
+  }
+
+  .event-description-markdown h2 {
+    margin-top: 0.25rem;
+    font-size: 1.125rem;
+  }
+
+  .event-description-markdown h3 {
+    margin-top: 0.125rem;
+    font-size: 1rem;
+  }
+
+  .event-description-markdown h4 {
+    font-size: 0.9375rem;
+  }
+
+  .event-description-markdown :where(ul, ol) {
+    display: grid;
+    gap: 0.25rem;
+    padding-left: 1.25rem;
+  }
+
+  .event-description-markdown ul {
+    list-style: disc;
+  }
+
+  .event-description-markdown ol {
+    list-style: decimal;
+  }
+
+  .event-description-markdown strong {
+    color: var(--app-text);
+    font-weight: 800;
+  }
+
+  .event-description-markdown a {
+    display: inline-flex;
+    max-width: 100%;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: 6px;
+    background: rgba(88, 140, 126, 0.12);
+    padding: 0.125rem 0.5rem;
+    color: var(--app-blue-hover);
+    font-weight: 800;
+    text-decoration: none;
+    vertical-align: baseline;
+  }
+
+  .event-description-markdown a::after {
+    content: "↗";
+    flex: 0 0 auto;
+    font-size: 0.75em;
+    line-height: 1;
+  }
+
+  .event-description-markdown a:hover,
+  .event-description-markdown a:focus-visible {
+    background: rgba(88, 140, 126, 0.18);
+    color: var(--app-blue);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+
+  .event-description-markdown a:focus-visible {
+    outline: 2px solid rgba(88, 140, 126, 0.35);
+    outline-offset: 2px;
+  }
+
+  .event-description-markdown blockquote {
+    border-left: 3px solid rgba(88, 140, 126, 0.45);
+    padding-left: 0.875rem;
+    color: var(--app-muted);
+  }
+
   .reservation-panel .input,
   .reservation-panel .select {
     width: 100%;
