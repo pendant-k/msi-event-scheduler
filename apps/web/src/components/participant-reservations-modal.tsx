@@ -110,10 +110,19 @@ export function ParticipantReservationsModal({ eventId, rows, authenticated, def
                 <input name="phoneNumber" className="input input-bordered" inputMode="tel" required />
               </label>
               <label className="form-control">
-                <span className="label-text">행사 비밀번호</span>
-                <input name="password" type="password" className="input input-bordered" required />
+                <span className="label-text">비밀번호</span>
+                <input
+                  name="password"
+                  type="text"
+                  className="input input-bordered"
+                  placeholder="4자리 숫자"
+                  autoComplete="off"
+                  required
+                />
               </label>
-              <p className="text-sm text-base-content/60">비밀번호를 잊은 경우 현장 운영자에게 문의해 주세요.</p>
+              <p className="text-sm text-base-content/60">
+                비밀번호로 활용할 4자리 숫자를 입력해 주세요.
+              </p>
               <PendingSubmitButton className="btn btn-primary w-full gap-2" pendingChildren="확인 중">
                 확인하기
               </PendingSubmitButton>

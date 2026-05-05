@@ -53,8 +53,7 @@ export default async function EventPage({
         <form action={participantAccessAction} className="reservation-panel surface-flat space-y-3 p-4">
           <h2 className="text-lg font-semibold">예약 접근</h2>
           <p className="text-sm text-base-content/60">
-            처음이면 비밀번호가 설정되고, 이미 등록했다면 같은 비밀번호로 내 예약에 접근합니다. 비밀번호를 잊은 경우 현장
-            운영자에게 문의해 주세요.
+            전화번호와 비밀번호로 내 예약에 접근합니다. 비밀번호를 잊은 경우 현장 운영자에게 문의해 주세요.
           </p>
           <input type="hidden" name="eventId" value={eventId} />
           <input type="hidden" name="redirectTo" value={`/event/${eventId}`} />
@@ -63,9 +62,19 @@ export default async function EventPage({
             <input name="phoneNumber" className="input input-bordered" inputMode="tel" required />
           </label>
           <label className="form-control">
-            <span className="label-text">행사 비밀번호</span>
-            <input name="password" type="password" className="input input-bordered" required />
+            <span className="label-text">비밀번호</span>
+            <input
+              name="password"
+              type="text"
+              className="input input-bordered"
+              placeholder="4자리 숫자"
+              autoComplete="off"
+              required
+            />
           </label>
+          <p className="text-sm text-base-content/60">
+            비밀번호로 활용할 4자리 숫자를 입력해 주세요.
+          </p>
           <PendingSubmitButton className="btn btn-primary w-full gap-2" pendingChildren="확인 중">
             계속하기
           </PendingSubmitButton>
