@@ -4,11 +4,11 @@ import { eq, sql } from "drizzle-orm";
 import { updateTimeslotSettings } from "../src/events";
 import { createOrLoginParticipantAccess } from "../src/participantAccess";
 import {
+  addTournamentApplication,
   cancelReservation,
   checkInReservation,
   createReservation,
   listReservationsForAccess,
-  markNoShowReservation,
   searchCheckInRows,
   updateAdminReservationStatus
 } from "../src/reservations";
@@ -322,7 +322,7 @@ describeWithDb("reservation domain", () => {
     }
   });
 
-  it("prevents concurrent tournament reservations from exceeding tournament capacity", async () => {
+  it("allows concurrent tournament reservations without a tournament capacity limit", async () => {
     const second = createDatabase(process.env.TEST_DATABASE_URL);
     try {
       const [sessionA, sessionB] = await Promise.all([access("01033330001", db), access("01033330002", second.db)]);
@@ -349,18 +349,15 @@ describeWithDb("reservation domain", () => {
         })
       ]);
 
-      expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
-      expect(results.filter((result) => result.status === "rejected")).toHaveLength(1);
-      const rejected = results.find((result) => result.status === "rejected");
-      expect(rejected).toMatchObject({ reason: { code: "tournament_full" } });
+      expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(2);
       const rows = await searchCheckInRows(db, { eventId: "event-test" });
-      expect(rows.filter((row) => row.tournament)).toHaveLength(1);
+      expect(rows.filter((row) => row.tournament)).toHaveLength(2);
     } finally {
       await second.client.close();
     }
   });
 
-  it("counts tournament capacity globally across active tournament reservations only", async () => {
+  it("lets admins add tournament application to an existing active reservation", async () => {
     const sessionA = await access("01044440001", db);
     const reservation = await createReservation(db, {
       eventId: "event-test",
@@ -370,41 +367,16 @@ describeWithDb("reservation domain", () => {
       school: "전역초",
       grade: 5,
       guardianConfirmed: false,
-      tournament: true
+      tournament: false
     });
 
-    const sessionB = await access("01044440002", db);
-    await expect(
-      createReservation(db, {
-        eventId: "event-test",
-        accessId: sessionB.accessId,
-        timeslotId: "slot-test",
-        name: "대회B",
-        school: "전역초",
-        grade: 5,
-        guardianConfirmed: false,
-        tournament: true
-      })
-    ).rejects.toMatchObject({ code: "tournament_full" } satisfies Partial<DomainError>);
-
-    await markNoShowReservation(db, {
+    await addTournamentApplication(db, {
       eventId: "event-test",
       reservationId: reservation.id,
       adminUserId: "admin-test"
     });
 
-    await createReservation(db, {
-      eventId: "event-test",
-      accessId: sessionB.accessId,
-      timeslotId: "slot-test",
-      name: "대회B",
-      school: "전역초",
-      grade: 5,
-      guardianConfirmed: false,
-      tournament: true
-    });
-
     const rows = await searchCheckInRows(db, { eventId: "event-test" });
-    expect(rows.filter((row) => row.tournament && row.status !== "NO_SHOW")).toHaveLength(1);
+    expect(rows.find((row) => row.id === reservation.id)?.tournament).toBe(true);
   });
 });

@@ -1,6 +1,7 @@
 "use server";
 
 import {
+  addTournamentApplication,
   cancelReservation,
   checkInReservation,
   createEventDay,
@@ -192,6 +193,22 @@ export async function updateReservationStatusAction(formData: FormData) {
   revalidatePath(`/event/${eventId}/schedule`);
 }
 
+export async function addTournamentApplicationAction(formData: FormData) {
+  const eventId = formString(formData, "eventId");
+  const adminUserId = await getAdminUserId();
+  if (!adminUserId) redirect("/admin");
+  const db = await getAppDb();
+  await addTournamentApplication(db, {
+    eventId,
+    reservationId: formString(formData, "reservationId"),
+    adminUserId
+  });
+  revalidatePath(`/admin/events/${eventId}`);
+  revalidatePath(`/admin/events/${eventId}/reservations`);
+  revalidatePath(`/admin/events/${eventId}/tournament`);
+  revalidatePath(`/event/${eventId}`);
+}
+
 export async function createEventAction(formData: FormData) {
   const adminUserId = await getAdminUserId();
   if (!adminUserId) redirect("/admin");
@@ -205,8 +222,7 @@ export async function createEventAction(formData: FormData) {
     endsAt: formTime(formData, "endsAt"),
     timeslotMinutes: formNumber(formData, "timeslotMinutes", 60),
     capacity: formNumber(formData, "capacity", 20),
-    enableTournament: formData.get("enableTournament") === "on",
-    tournamentCapacity: formNumber(formData, "tournamentCapacity", 32)
+    enableTournament: formData.get("enableTournament") === "on"
   });
   revalidatePath("/admin");
   redirect(`/admin/events/${result.eventId}`);

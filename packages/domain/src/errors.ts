@@ -10,7 +10,6 @@ export class DomainError extends Error {
       | "duplicate_reservation"
       | "event_closed"
       | "timeslot_closed"
-      | "tournament_full"
       | "guardian_required"
       | "cancel_not_allowed"
       | "invalid_state"

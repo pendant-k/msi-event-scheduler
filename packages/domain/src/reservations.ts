@@ -1,4 +1,4 @@
-import { and, count, desc, eq, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, like, or, sql } from "drizzle-orm";
 import type { SchedulerDb } from "@scheduler/db";
 import {
   adminLogs,
@@ -8,6 +8,7 @@ import {
   reservations,
   timeslots
 } from "@scheduler/db";
+import { assertEventAdmin } from "./admin";
 import { DomainError } from "./errors";
 import { duplicateKey, id, normalizePhone, nowIso, shortCode } from "./utils";
 
@@ -64,17 +65,6 @@ export async function createReservation(
     if (guardianRequired && !input.guardianConfirmed) {
       throw new DomainError("guardian_required", "보호자 동행 확인이 필요합니다.");
     }
-    if (input.tournament && event.enableTournament) {
-      await tx.execute(sql`select id from ${events} where id = ${event.id} for update`);
-      const tournamentCount = await tx
-        .select({ value: count() })
-        .from(reservations)
-        .where(and(eq(reservations.eventId, event.id), eq(reservations.tournament, true), activeReservationStatusSql));
-      if ((tournamentCount[0]?.value ?? 0) >= event.tournamentCapacity) {
-        throw new DomainError("tournament_full", "대회 신청이 마감되었습니다.");
-      }
-    }
-
     const timestamp = nowIso();
     const participantKey = {
       eventId: event.id,
@@ -378,6 +368,39 @@ export async function updateAdminReservationStatus(
       updatedAt: timestamp
     };
   });
+}
+
+export async function addTournamentApplication(
+  db: SchedulerDb,
+  input: { eventId: string; reservationId: string; adminUserId: string }
+) {
+  await assertEventAdmin(db, input.eventId, input.adminUserId);
+  const reservation = await db.query.reservations.findFirst({
+    where: and(eq(reservations.id, input.reservationId), eq(reservations.eventId, input.eventId))
+  });
+  if (!reservation) throw new DomainError("not_found", "예약을 찾을 수 없습니다.");
+  if (reservation.tournament) return reservation;
+  if (reservation.status === "CANCELLED" || reservation.status === "NO_SHOW") {
+    throw new DomainError("invalid_state", "취소 또는 노쇼 예약은 대회 신청으로 변경할 수 없습니다.");
+  }
+
+  const timestamp = nowIso();
+  await db
+    .update(reservations)
+    .set({ tournament: true, updatedAt: timestamp })
+    .where(and(eq(reservations.id, reservation.id), eq(reservations.eventId, input.eventId)));
+  await db.insert(adminLogs).values({
+    id: id("log"),
+    eventId: input.eventId,
+    adminUserId: input.adminUserId,
+    action: "ADD_TOURNAMENT_APPLICATION",
+    targetType: "reservation",
+    targetId: reservation.id,
+    reason: "admin_tournament_application",
+    metadata: {},
+    createdAt: timestamp
+  });
+  return { ...reservation, tournament: true, updatedAt: timestamp };
 }
 
 export async function searchCheckInRows(

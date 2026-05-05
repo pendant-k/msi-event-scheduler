@@ -60,7 +60,6 @@ type TournamentMatch = {
 
 type TournamentManagementProps = {
   eventId: string;
-  tournamentCapacity: number;
   applicants: TournamentApplicant[];
   tournament: Tournament | null;
   entrants: TournamentEntrant[];
@@ -200,7 +199,7 @@ function getSuggestedBracketSize(participantCount: number) {
   return bracketSizes.find((size) => participantCount <= size) ?? bracketSizes[bracketSizes.length - 1]!;
 }
 
-export function TournamentManagement({ eventId, tournamentCapacity, applicants, tournament, entrants, matches }: TournamentManagementProps) {
+export function TournamentManagement({ eventId, applicants, tournament, entrants, matches }: TournamentManagementProps) {
   const [query, setQuery] = useState("");
   const [picker, setPicker] = useState<PickerState | null>(null);
   const [isPanning, setIsPanning] = useState(false);
@@ -400,12 +399,7 @@ export function TournamentManagement({ eventId, tournamentCapacity, applicants, 
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-3 md:grid-cols-4">
-        <div className="stat-flat p-4">
-          <div className="text-sm text-base-content/60">대회 정원</div>
-          <div className="text-2xl font-bold">{tournamentCapacity}</div>
-          <div className="text-sm text-base-content/60">행사 전체 기준</div>
-        </div>
+      <div className="grid gap-3 md:grid-cols-3">
         <div className="stat-flat p-4">
           <div className="text-sm text-base-content/60">대회 신청</div>
           <div className="text-2xl font-bold">{applicants.length}</div>

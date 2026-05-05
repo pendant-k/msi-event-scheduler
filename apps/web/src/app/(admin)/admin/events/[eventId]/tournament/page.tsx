@@ -29,7 +29,6 @@ export default async function AdminTournamentPage({ params }: { params: Promise<
 
       <TournamentManagement
         eventId={eventId}
-        tournamentCapacity={dashboard.event.tournamentCapacity}
         applicants={dashboard.applicants}
         tournament={dashboard.tournament ?? null}
         entrants={dashboard.entrants}

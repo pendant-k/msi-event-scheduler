@@ -67,7 +67,13 @@ export default async function AdminReservationsPage({
         </button>
       </form>
 
-      <AdminLiveReservations eventId={eventId} initialRows={rows} initialUpdatedAt={initialUpdatedAt} query={q} />
+      <AdminLiveReservations
+        eventId={eventId}
+        enableTournament={schedule.event.enableTournament}
+        initialRows={rows}
+        initialUpdatedAt={initialUpdatedAt}
+        query={q}
+      />
     </div>
   );
 }

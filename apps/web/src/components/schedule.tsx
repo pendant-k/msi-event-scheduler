@@ -480,7 +480,12 @@ export function Schedule({
                       {!slotRowsLoading && !slotRowsError && (
                         <div className="reservation-action-list">
                           {slotRows.map((row) => (
-                            <AdminReservationActionCard key={row.id} eventId={event.id} row={row} />
+                            <AdminReservationActionCard
+                              key={row.id}
+                              eventId={event.id}
+                              enableTournament={event.enableTournament}
+                              row={row}
+                            />
                           ))}
                           {slotRows.length === 0 && <div className="alert">이 시간대 예약이 없습니다.</div>}
                         </div>

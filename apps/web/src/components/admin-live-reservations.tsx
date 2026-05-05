@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { DataTable } from "@scheduler/ui/data-table";
-import { Ban, RefreshCw, RotateCcw, Save, UserCheck, UserX } from "lucide-react";
-import { updateReservationStatusAction } from "@/app/actions";
+import { Ban, RefreshCw, RotateCcw, Save, Trophy, UserCheck, UserX } from "lucide-react";
+import { addTournamentApplicationAction, updateReservationStatusAction } from "@/app/actions";
 import { FormLoadingModal, PendingSubmitButton } from "@/components/loading-modal";
 import { formatClockTime, formatDateTime, formatTime } from "@/lib/format";
 import { getReservationStatusLabel, isActiveReservationStatus } from "@/lib/status-labels";
@@ -31,6 +31,7 @@ type AdminReservationsPayload = {
 
 type AdminLiveReservationsProps = {
   eventId: string;
+  enableTournament: boolean;
   initialRows: AdminReservationRow[];
   initialUpdatedAt: string;
   query?: string;
@@ -71,7 +72,17 @@ function getTimeslotLabel(row: Pick<AdminReservationRow, "timeslotTitle" | "star
   return row.timeslotTitle ? `${row.timeslotTitle} · ${time}` : time;
 }
 
-export function AdminReservationActionCard({ eventId, row }: { eventId: string; row: AdminReservationRow }) {
+export function AdminReservationActionCard({
+  eventId,
+  enableTournament,
+  row
+}: {
+  eventId: string;
+  enableTournament: boolean;
+  row: AdminReservationRow;
+}) {
+  const tournamentActionDisabled = row.tournament || row.status === "CANCELLED" || row.status === "NO_SHOW";
+
   return (
     <div className="reservation-action-card">
       <div className="min-w-0">
@@ -134,6 +145,17 @@ export function AdminReservationActionCard({ eventId, row }: { eventId: string; 
           </PendingSubmitButton>
           <FormLoadingModal title="예약을 취소하고 있습니다" description={`${row.participantName} 예약을 취소 처리하는 중입니다.`} />
         </form>
+        {enableTournament && (
+          <form action={addTournamentApplicationAction}>
+            <input type="hidden" name="eventId" value={eventId} />
+            <input type="hidden" name="reservationId" value={row.id} />
+            <PendingSubmitButton className="btn btn-outline btn-sm gap-2" pendingChildren="추가 중" disabled={tournamentActionDisabled}>
+              <Trophy aria-hidden="true" className="h-4 w-4" />
+              {row.tournament ? "대회 신청됨" : "대회 신청 추가"}
+            </PendingSubmitButton>
+            <FormLoadingModal title="대회 신청을 추가하고 있습니다" description={`${row.participantName} 예약을 대회 신청으로 변경하는 중입니다.`} />
+          </form>
+        )}
         <form action={updateReservationStatusAction} className="reservation-status-form">
           <input type="hidden" name="eventId" value={eventId} />
           <input type="hidden" name="reservationId" value={row.id} />
@@ -156,7 +178,7 @@ export function AdminReservationActionCard({ eventId, row }: { eventId: string; 
   );
 }
 
-function AdminLiveReservationsInner({ eventId, initialRows, initialUpdatedAt, query }: AdminLiveReservationsProps) {
+function AdminLiveReservationsInner({ eventId, enableTournament, initialRows, initialUpdatedAt, query }: AdminLiveReservationsProps) {
   const initialData = useMemo<AdminReservationsPayload>(
     () => ({ rows: initialRows, updatedAt: initialUpdatedAt }),
     [initialRows, initialUpdatedAt]
@@ -221,7 +243,7 @@ function AdminLiveReservationsInner({ eventId, initialRows, initialUpdatedAt, qu
         </div>
         <div className="reservation-action-list">
           {rows.map((row) => (
-            <AdminReservationActionCard key={row.id} eventId={eventId} row={row} />
+            <AdminReservationActionCard key={row.id} eventId={eventId} enableTournament={enableTournament} row={row} />
           ))}
           {rows.length === 0 && <div className="alert">예약 내역이 없습니다.</div>}
         </div>
